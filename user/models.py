@@ -1,7 +1,6 @@
 from django.db import models
 
 class User(models.Model):
-
     login_id    = models.CharField(max_length = 20)
     password    = models.CharField(max_length = 500)
     kakao_id    = models.CharField(max_length = 100, null = True)

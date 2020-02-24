@@ -16,8 +16,10 @@ class SignUpView(View):
             if User.objects.filter(login_id = data['login_id']).exists():
                 return HttpResponse(status = 400)
 
-            # 비밀번호 암호화
             password_crypt = bcrypt.hashpw(data['password'].encode('utf-8'), bcrypt.gensalt())
+
+            if User.objects.filter(email = data['email']).exists():
+                return HttpResponse(status = 400)
 
             User(
                 login_id = data['login_id'],
@@ -29,7 +31,6 @@ class SignUpView(View):
                 image    = data['image'],
             ).save()
 
-            # 가입 완료되면 바로 토큰 발행
             token = jwt.encode({'login_id' : user.login_id}, SECRET_KEY, algorithm = 'HS256')
 
             return JsonResponse({"token" : token.decode('utf-8')}, status = 200)

@@ -1,4 +1,4 @@
-from user.views import *
+from user.views import SignUpView 
 
 from django.urls import path
 
