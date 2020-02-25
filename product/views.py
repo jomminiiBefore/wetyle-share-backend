@@ -9,11 +9,9 @@ from django.http import JsonResponse, HttpResponse
 class BrandListView(View):
     def get(self, request):
         result = []
+        
+        for i in Brand.objects.values():
+            result.append(i)
 
-        with open('../crawler/brand_infos.csv', mode='r') as brand_infos:
-            reader = csv.reader(brand_infos)
-
-            for list in reader:
-                result.append(list)
         return JsonResponse({"brand list": result}, status = 200)
 
