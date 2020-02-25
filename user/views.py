@@ -29,8 +29,8 @@ class SignUpView(View):
                 return JsonResponse({"message": "existing email"}, status = 400)
 
             User(
-                login_id = data['login_id'],
-                password = password_crypt.decode('utf-8'),
+                login_id  = data['login_id'],
+                password  = password_crypt.decode('utf-8'),
                 nickname  = data['nickname'],
                 email     = data['email'],
                 birthday  = data.get('birthday', None),
