@@ -1,8 +1,7 @@
 import time
 import csv
 
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+from selenium                       import webdriver
 
 url = 'https://www.styleshare.kr/brands'
 
@@ -11,12 +10,11 @@ driver.get(url)
 
 brand_list = []
 
-for page in range(1,4):
+for page in range(1,17):
     driver.implicitly_wait(5)
 
     if page == 1:
         pass
-    
     else :
         elements = driver.find_element_by_xpath(f'//*[@id="app"]/div/div[2]/div[1]/div/button[{page}]')
         driver.execute_script("arguments[0].click();", elements)
