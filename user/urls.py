@@ -1,4 +1,4 @@
-from user.views import SignUpView
+from user.views import SignUpView, SignInView
 from django.urls import path
 
 urlpatterns = [

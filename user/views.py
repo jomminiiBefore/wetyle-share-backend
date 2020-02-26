@@ -56,16 +56,16 @@ class SignInView(View):
            if User.objects.filter(login_id = data['login_id']).exists():
                user = User.objects.get(login_id = data['login_id'])
 
-
                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                   # 토큰 발행
+
                    token = jwt.encode({'login_id' : user.login_id}, SECRET_KEY, algorithm = 'HS256')
                    token = token.decode('utf-8')
 
                    return JsonResponse({"token" : token}, status = 200)
 
                else :
-                   return HttpResponse(status = 401)
+                   return JsonResponse({"message": "INVALID_PASSWORD"}, status = 401)
+
         except KeyError :
-            return  HttpResponse(status = 400)
+             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
