@@ -3,13 +3,15 @@ import requests
 import bcrypt
 import jwt
 
-from my_settings import SECRET_KEY
-from .models import User
 
-from django.views import View
-from django.http import JsonResponse, HttpResponse
+from my_settings import SECRET_KEY
+from .models     import User
+
+from django.views           import View
+from django.http            import JsonResponse, HttpResponse
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
+from django.db.models       import Q
 
 class SignUpView(View):
     def post(self, request):
@@ -46,16 +48,17 @@ class SignUpView(View):
 
 class SignInView(View):
     def post(self, request):
-        data = json.loads(request.body)
-
+        data     = json.loads(request.body)
+        login_id = data.get('login_id', None)
+        email    = data.get('email', None)
         try:
-           if User.objects.filter(login_id = data['login_id']).exists():
-               user = User.objects.get(login_id = data['login_id'])
+            if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
+                user = User.objects.filter(Q(login_id = login_id)|Q(email = email))[0]
 
-               if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
-                   token = jwt.encode({'login_id':user.login_id}, SECRET_KEY, algorithm = 'HS256')
-                   return JsonResponse({"token":token.decode('utf-8')}, status = 200)
-               return HttpResponse(status = 401)
+                if bcrypt.checkpw(data['password'].encode('utf-8'), user.password.encode('utf-8')):
+                    token = jwt.encode({'login_id':user.login_id}, SECRET_KEY, algorithm = 'HS256')
+                    return JsonResponse({"token":token.decode('utf-8')}, status = 200)
+                return HttpResponse(status = 401)
+            return HttpResponse(status = 400)
         except KeyError:
-             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
-
+            return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
