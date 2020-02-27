@@ -46,6 +46,32 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
+class CheckIdView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        try:
+            login_id = data.get('login_id', None)
+            if User.objects.filter(login_id = login_id).exists():
+                return JsonResponse({"message": "existing login_id"}, status = 400)
+                        
+            return HttpResponse(status = 200)
+
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+
+class CheckEmailView(View):
+    def post(self, request):
+        data = json.loads(request.body)
+        try:            
+            email = data.get('email', None)
+            if User.objects.filter(email = email).exists():
+                return JsonResponse({"message": "existing email"}, status = 400)
+            
+            return HttpResponse(status = 200)
+
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+
 class SignInView(View):
     def post(self, request):
         data     = json.loads(request.body)
@@ -62,3 +88,4 @@ class SignInView(View):
             return HttpResponse(status = 400)
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
+
