@@ -24,6 +24,3 @@ for brand in result:
         small_image_url = brand[2],
         description = brand[3],
     ).save()
-
-
-
