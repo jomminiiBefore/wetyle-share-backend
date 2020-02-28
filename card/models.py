@@ -5,13 +5,13 @@ from user.models import User
 from django.db import models
 
 class Collection(models.Model):
-    name = models.CharField(max_length = 50)
+    name        = models.CharField(max_length = 50)
     description = models.CharField(max_length = 500)
-    user = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'collections')
-    created_at = models.DateTimeField(auto_now_add = True)
-    updated_at = models.DateTimeField(auto_now = True)
+    user        = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'collections')
+    created_at  = models.DateTimeField(auto_now_add = True)
+    updated_at  = models.DateTimeField(auto_now = True)
     collection_follower = models.ManyToManyField(User, through = 'CollectionFollower')
-    collection_style = models.ManyToManyField('Style', through = 'CollectionStyle')
+    collection_style    = models.ManyToManyField('Style', through = 'CollectionStyle')
     # 리뷰 class 등록 후 컬렉션 리뷰 다대다 작성
     # Q&A class 등록 후 컬렉션 Q&A 다대다 작성
 
@@ -20,27 +20,27 @@ class Collection(models.Model):
 
 class Style(models.Model):
     description = models.CharField(max_length = 500)
-    image_url = models.TextField()
-    user = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'styles')
-    style_like = models.ManyToManyField(User, through = 'StyleLike')
+    image_url   = models.TextField()
+    user        = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'styles')
+    style_like  = models.ManyToManyField(User, through = 'StyleLike')
     # product class 등록 후 스타일 관련상품 다대다 작성
 
     class Meta:
         db_table = 'styles'
 
 class StyleComment(models.Model):
-    description = models.CharField(max_length = 200)
-    style = models.ForeignKey(Style, on_delete = models.CASCADE, related_name = 'comments')
-    user = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'comments')
-    created_at = models.DateTimeField(auto_now_add = True)
-    updated_at = models.DateTimeField(auto_now = True)
+    description  = models.CharField(max_length = 200)
+    style        = models.ForeignKey(Style, on_delete = models.CASCADE, related_name = 'comments')
+    user         = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'comments')
+    created_at   = models.DateTimeField(auto_now_add = True)
+    updated_at   = models.DateTimeField(auto_now = True)
 
     class Meta:
-        db_table = 'style_comments'
+        db_table  = 'style_comments'
 
 class StyleLike(models.Model):
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
-    style = models.ForeignKey(Style, on_delete = models.CASCADE)
+    user       = models.ForeignKey(User, on_delete = models.CASCADE)
+    style      = models.ForeignKey(Style, on_delete = models.CASCADE)
     created_at = models.DateTimeField(auto_now_add = True)
 
     class Meta:
@@ -48,20 +48,20 @@ class StyleLike(models.Model):
 
 class CollectionStyle(models.Model):
     collection = models.ForeignKey(Collection, on_delete = models.CASCADE)
-    style = models.ForeignKey(Style, on_delete = models.CASCADE)
+    style      = models.ForeignKey(Style, on_delete = models.CASCADE)
     created_at = models.DateTimeField(auto_now_add = True)
 
     class Meta:
         db_table = 'collection_styles'
 
 class StyleRelatedItem(models.Model):
-    pants = models.CharField(max_length = 50)
-    skirt = models.CharField(max_length = 50)
-    shoes = models.CharField(max_length = 50)
-    bag = models.CharField(max_length = 50)
+    pants     = models.CharField(max_length = 50)
+    skirt     = models.CharField(max_length = 50)
+    shoes     = models.CharField(max_length = 50)
+    bag       = models.CharField(max_length = 50)
     accessory = models.CharField(max_length = 50)
-    etc = models.CharField(max_length = 50)
-    style = models.ForeignKey(Style, on_delete = models.CASCADE, related_name = 'style_related_items')
+    etc       = models.CharField(max_length = 50)
+    style     = models.ForeignKey(Style, on_delete = models.CASCADE, related_name = 'style_related_items')
 
     class Meta:
         db_table = 'style_related_items'
@@ -74,7 +74,7 @@ class StyleRelatedItem(models.Model):
 #        db_table = 'style_related_selling_items'
 
 class CollectionFollower(models.Model):
-    user = models.ForeignKey(User, on_delete = models.CASCADE)
+    user       = models.ForeignKey(User, on_delete = models.CASCADE)
     collection = models.ForeignKey('Collection', on_delete = models.CASCADE)
     created_at = models.DateTimeField(auto_now_add = True)
 
