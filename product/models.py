@@ -11,7 +11,7 @@ class Product(models.Model):
     price           = models.IntegerField(default = 0)
     discounted_price= models.IntegerField(default = 0)
     point           = models.IntegerField(default = 0)
-    detailed_info   = models.TextField() 
+    detailed_info   = models.TextField()
     add_info        = models.CharField(max_length = 1000)
     created_at      = models.DateTimeField(auto_now_add = True)
     updated_at      = models.DateTimeField(auto_now = True)
@@ -54,8 +54,8 @@ class Brand(models.Model):
         db_table = 'brands'
 
 class ProductLike(models.Model):
-    product         = models.ForeignKey('Product', on_delete = models.CASCADE, null = True)
-    user            = models.ForeignKey('user.User', on_delete = models.CASCADE, null = True)
+    product         = models.ForeignKey('Product', on_delete = models.CASCADE)
+    user            = models.ForeignKey('User', on_delete = models.CASCADE)
     created_at      = models.DateTimeField(auto_now_add = True)
     
     class Meta:
@@ -63,7 +63,7 @@ class ProductLike(models.Model):
 
 class ProductInqury(models.Model):
     decription      = models.CharField(max_length = 500)
-    user            = models.ForeignKey('user.User', on_delete = models.SET_NULL, null = True)    
+    user            = models.ForeignKey('User', on_delete = models.SET_NULL, null = True)
     is_answer       = models.BooleanField(default = False)
     description     = models.CharField(max_length = 500)
     product         = models.ForeignKey('Product', on_delete = models.CASCADE, null = True)
@@ -98,7 +98,7 @@ class Size(models.Model):
         db_table = 'sizes'
 
 class ProductStock(models.Model):
-    product         = models.ForeignKey('Product', on_delete = models.SET_NULL, null = True)
+    product         = models.ForeignKey('Product', on_delete = models.SET_NULL)
     color           = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
     size            = models.ForeignKey('Size', on_delete = models.SET_NULL, null = True)
     stock           = models.IntegerField()
@@ -107,7 +107,7 @@ class ProductStock(models.Model):
         db_table = 'product_stocks'
 
 class OrderedProduct(models.Model):
-    order           = models.ForeignKey('Order', on_delete = models.SET_NULL, null = True)
+    order           = models.ForeignKey('Order', on_delete = models.SET_NULL)
     product         = models.ForeignKey('Product', on_delete = models.SET_NULL, null = True)
     size            = models.ForeignKey('Size', on_delete = models.SET_NULL, null = True)
     color           = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
@@ -116,7 +116,7 @@ class OrderedProduct(models.Model):
         db_table = 'ordered_products'
 
 class Order(models.Model):
-    user            = models.ForeignKey('user.User', on_delete = models.SET_NULL, null = True)
+    user            = models.ForeignKey('User', on_delete = models.SET_NULL, null = True)
     shipping        = models.ForeignKey('Shipping', on_delete = models.SET_NULL, null = True)
     created_at      = models.DateTimeField(auto_now_add = True)
     updated_at      = models.DateTimeField(auto_now = True)
