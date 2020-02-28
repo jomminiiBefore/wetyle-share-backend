@@ -4,58 +4,68 @@ import csv
 from selenium import webdriver
 from bs4 import BeautifulSoup
 
-url = 'https://www.styleshare.kr/goods/295509'
 driver = webdriver.Chrome(('/Applications/chromedriver'))
-driver.get(url)
-time.sleep(5)
 
-product_info = []
+with open('./product_lists_02.csv', mode='r') as product_lists:
+    reader = csv.reader(product_lists)
 
-try:
-    productName = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[1]/p')
-    productImg  = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[1]/div/picture/img')
+    product_info = []
 
-    # 할인가가 있을 때
-    try:
-        productPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/s/text()[1]')
-        productDiscountPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div/p/text()')
+    for product in reader:
+        url = f'{product[1]}'
+        driver.get(url)
+        time.sleep(5)
 
-    #할인가가 없을 때
-    except Exception:
-        productPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div/p')
-        productDiscountPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div/p')
+        try:
+            productName = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[1]/p')
+            productImg  = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[1]/div/picture/img')
 
-    productDetailInfo = driver.find_elements_by_css_selector('#app > div > div > div > div > div > div > div > div > picture > img')
+            # 할인가가 있을 때
+            try:
+                productPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div/s')
+                productDiscountPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div/p')
 
-    detailImageList = []
-    for image in productDetailInfo:
-        detailImageList.append(image.get_attribute("data-src"))
+            #할인가가 없을 때
+            except Exception:
+                productPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div/p')
+                productDiscountPrice = driver.find_element_by_xpath('//*[@id="app"]/div/div[1]/div[2]/div[2]/div/div[2]/div[1]/div[1]/div/p')
 
-    allPage        = driver.page_source
-    soup           = BeautifulSoup(allPage,'html.parser')
-    productAddInfo = soup.select('#app > div > div.Box-fzpncP.iIZfvh > div:nth-child(3) > div > div')
+            productDetailInfo = driver.find_elements_by_css_selector('#app > div > div > div > div > div > div > div > div > picture > img')
+            detailImageList = []
+            for image in productDetailInfo:
+                detailImageList.append(image.get_attribute("data-src"))
 
-    try:
-        category   = driver.find_element_by_css_selector('#app > div > div.Box-fzpncP.ewLxnc > div.Box-fzpncP.erzKmA.goods__category-best')
-    except Exception:
-        category   = driver.find_element_by_css_selector('#app > div > div.Box-fzpncP.erzKmA.goods__category-best')
+            allPage        = driver.page_source
+            soup           = BeautifulSoup(allPage,'html.parser')
+            productAddInfo = soup.select('#app > div > div.Box-fzpncP.iIZfvh > div:nth-child(3) > div > div')
 
-except Exception as e:
-    print("error message : ", e.message)
+            try:
+                category   = driver.find_element_by_css_selector('#app > div > div.Box-fzpncP.ewLxnc > div.Box-fzpncP.erzKmA.goods__category-best')
+            except Exception:
+                category   = driver.find_element_by_css_selector('#app > div > div.Box-fzpncP.erzKmA.goods__category-best')
+        except Exception as e:
+            print("error",e, url)
+        finally:
+            try:
+                print(productPrice.text, productDiscountPrice.text)
+                product_info.append(
+                    {
+                        "name"           : productName.text,
+                        "image"          : productImg.get_attribute("src"),
+                        "price"          : round(int(productPrice.text.split('원')[0].replace(",", "")),-2),
+                        "discount_price" : round(int(productDiscountPrice.text.split()[1].split('원')[0].replace(",", "")),-2),
+                        "detail_info"    : detailImageList,
+                        "add_info"       : productAddInfo,
+                        "category_id"    : category.get_attribute("data-category_id"),
+                    }
+                )
+            except Exception as e:
+                print(e)
 
-finally:
-    product_info.append(
-        {
-            "name"           : productName.text,
-            "image"          : productImg.get_attribute("src"),
-            "price"          : int(productPrice.text.split()[1].split('원')[0].replace(",", "")),
-            "discount_price" : int(productDiscountPrice.text.split()[1].split('원')[0].replace(",", "")),
-            "detail_info"    : detailImageList,
-            "add_info"       : productAddInfo,
-            "category_id"    : category.get_attribute("data-category_id"),
-        }
-    )
+with open('./product_details_02.csv', mode='w') as product_details:
+    product_writer = csv.writer(product_details)
 
-print(product_info)
+    for product in product_info:
+        product_writer.writerow([product["name"],product["image"],product["price"],product["discount_price"],product["detail_info"],product["add_info"],product["category_id"]])
 
 driver.quit()
