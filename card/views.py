@@ -2,12 +2,14 @@ import jwt
 import json
 import requests
 
-from user.models            import User
-from card.models            import Style, StyleLike
+from user.models              import User
+from card.models              import Style, StyleLike, StyleRelatedItem
+from user.utils               import login_decorator
+from .style_related_item_data import random_item
 
-from django.views           import View
-from django.http            import JsonResponse
-from django.core.exceptions import ObjectDoesNotExist
+from django.views             import View
+from django.http              import JsonResponse, HttpResponse
+from django.core.exceptions   import ObjectDoesNotExist
 
 class StyleView(View):
     def get(self, request, style_id):
@@ -19,6 +21,7 @@ class StyleView(View):
             style = [
                 {
                     'style_image_url'     : request_style.image_url,
+                    'related_item'        : list(request_style.style_related_items.values()),
                     'description'         : request_style.description,
                     'profile_image_url'   : style_user.image_url,
                     'nickname'            : style_user.nickname,
@@ -62,4 +65,31 @@ class DailyLookCardView(View):
                     for comment in style.comments.all()],
             } for style in style_list]
         return JsonResponse({"card_list": card_list}, status = 200)
+
+class StyleUploadView(View):
+    @login_decorator
+    def post(self,request):
+        data = json.loads(request.body)
+        try:
+            make = Style.objects.create(
+                description  = data['description'],
+                image_url    = data['image_url'],
+                user_id      = request.user.id
+            )
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+
+        random_item_list = random_item()
+        StyleRelatedItem(
+            pants        = random_item_list['pants'],
+            skirt        = random_item_list['skirt'],
+            shoes        = random_item_list['shoes'],
+            bag          = random_item_list['bag'],
+            accessory    = random_item_list['accessory'],
+            etc          = random_item_list['etc'],
+            style_id     = make.id
+        ).save()
+        return HttpResponse(status = 200)
+
+
 

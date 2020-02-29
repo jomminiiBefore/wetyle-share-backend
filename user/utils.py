@@ -22,7 +22,7 @@ def login_decorator(func):
             return JsonResponse({"message": "INVALID_USER" }, status = 400)
         except KeyError:
             JsonResponse({"message": "INVALID_KEY" }, status = 400)
-        return func(self, request, *args, **kwagrs)
+        return func(self, request, *args, **kwargs)
     return wrapper
 
 
