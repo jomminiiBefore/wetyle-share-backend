@@ -18,6 +18,7 @@ class StyleView(View):
             style = [
                 {
                     'style_image_url'     : request_style.image_url,
+                    'related_item' : list(request_style.style_related_items.values()),
                     'description'         : request_style.description,
                     'profile_image_url'   : style_user.image_url,
                     'nickname'            : style_user.nickname,
