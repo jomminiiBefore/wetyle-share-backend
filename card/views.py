@@ -42,6 +42,7 @@ class DailyLookCardView(View):
         style_list = Style.objects.all().prefetch_related('style_related_items', 'comments')
         card_list = [
             {
+                'style_id'           : style.id,
                 'style_image_url'    : style.image_url,
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
