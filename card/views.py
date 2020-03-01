@@ -179,6 +179,7 @@ class CollectionView(View):
                           for collection_style in collection_style_list]
             card_list  = [
                 {
+                    'style_id'           : style.id,
                     'style_image_url'    : style.image_url,
                     'related_item'       : list(style.style_related_items.values()),
                     'profile_image_url'  : style.user.image_url,
@@ -200,18 +201,19 @@ class CollectionView(View):
 
             collection      = Collection.objects.get(id = collection_id)
             collection_info = {
-                "name"           : collection.name,
-                "description"    : collection.description,
-                "follower_count" : CollectionFollower.objects\
+                'collection_id'  : collection.id,
+                'name'           : collection.name,
+                'description'    : collection.description,
+                'follower_count' : CollectionFollower.objects\
                                   .filter(collection_id = collection_id).count(),
-                "style_count"    : CollectionStyle.objects\
+                'style_count'    : CollectionStyle.objects\
                                   .filter(collection_id = collection_id).count(),
-                "user"           : {
-                    "nickname"    : collection.user.nickname,
-                    "login_id"    : collection.user.login_id,
-                    "description" : collection.user.description,
+                'user'           : {
+                    'nickname'    : collection.user.nickname,
+                    'login_id'    : collection.user.login_id,
+                    'description' : collection.user.description,
                 },
-                "card_list"      : card_list,
+                'card_list'      : card_list,
             }
             return JsonResponse({"result": collection_info}, status = 200)
         except Collection.DoesNotExist:
