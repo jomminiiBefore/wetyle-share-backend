@@ -10,7 +10,7 @@ from .style_related_item_data import random_item
 from django.views             import View
 from django.http              import JsonResponse, HttpResponse
 from django.core.exceptions   import ObjectDoesNotExist
-from django.db.models         import Q
+from django.db.models         import Q, Count
 
 class StyleView(View):
     def get(self, request, style_id):
@@ -142,3 +142,32 @@ class StyleLikeView(View):
                 return HttpResponse(status = 200)
         except Style.DoesNotExist:
             return JsonResponse({"message": "INVALID_STYLE_ID"}, status = 400)
+
+class PopularCardView(View):
+    def get(self, request):
+        ordered_style_list = Style.objects.prefetch_related('style_like')\
+                            .annotate(like_count = Count('style_like'))\
+                            .order_by('-like_count')
+        card_list = [
+            {
+                'style_image_url'    : style.image_url,
+                'related_item'       : list(style.style_related_items.values()),
+                'profile_image_url'  : style.user.image_url,
+                'nickname'           : style.user.nickname,
+                'profile_description': style.user.description,
+                'date'               : str(style.created_at)[2:11],
+                'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
+                'comment_count'      : style.comments.all().count(),
+                # collection 사용 시 작성
+                # 'collection_count': ,
+                'comment'            : [
+                    {
+                        'profile_image' : comment.user.image_url,
+                        'nickname'      : comment.user.nickname,
+                        'description'   : comment.description,
+                        'date'          : str(comment.updated_at)[2:11],
+                        }
+                    for comment in style.comments.all()],
+            } for style in ordered_style_list]
+        return JsonResponse({"card_list": card_list}, status = 200)
+
