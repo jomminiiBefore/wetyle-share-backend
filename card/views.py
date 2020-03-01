@@ -16,7 +16,7 @@ class StyleView(View):
         try:
             request_style = Style.objects.get(id = style_id)
             style_user    = Style.objects.select_related('user').get(id = style_id).user
-            comments       = Style.objects.prefetch_related('comments')\
+            comments      = Style.objects.prefetch_related('comments')\
                             .select_related('user').get(id = style_id).comments
             style = [
                 {
