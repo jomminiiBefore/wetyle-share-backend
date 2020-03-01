@@ -1,6 +1,7 @@
 from .views import (StyleView, DailyLookCardView, StyleUploadView,
                     StyleCommentUploadView, StyleCommentGetView,
-                    StyleLikeView, PopularCardView, CollectionView)
+                    StyleLikeView, PopularCardView, CollectionView,
+                    CollectionFollowView)
 
 from django.urls import path
 
@@ -13,4 +14,5 @@ urlpatterns = [
     path('style/like/<int:style_id>/', StyleLikeView.as_view()),
     path('popular/', PopularCardView.as_view()),
     path('collection/<int:collection_id>/', CollectionView.as_view()),
+    path('collection/follow/<int:collection_id>/', CollectionFollowView.as_view()),
 ]
