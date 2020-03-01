@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 driver = webdriver.Chrome(('/Applications/chromedriver'))
 
-with open('./product_lists_10.csv', mode='r') as product_lists:
+with open('./product_lists_08.csv', mode='r') as product_lists:
     reader = csv.reader(product_lists)
 
     product_info = []
@@ -65,10 +65,10 @@ with open('./product_lists_10.csv', mode='r') as product_lists:
             except Exception as e:
                 print(e)
 
-with open('./product_details_10.csv', mode='w') as product_details:
+with open('./product_details_08.csv', mode='w') as product_details:
     product_writer = csv.writer(product_details)
 
     for product in product_info:
-        product_writer.writerow([product["name"],product["image"],product["price"],product["discount_price"],product["detail_info"],product["add_info"],product["category_id"], product["brand_id"])
+        product_writer.writerow([product["name"],product["image"],product["price"],product["discount_price"],product["detail_info"],product["add_info"],product["category_id"], product["brand_id"]])
 
 driver.quit()
