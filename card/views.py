@@ -150,6 +150,7 @@ class PopularCardView(View):
                             .order_by('-like_count')
         card_list = [
             {
+                'style_id'           : style.id, 
                 'style_image_url'    : style.image_url,
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
