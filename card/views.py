@@ -3,7 +3,9 @@ import json
 import requests
 
 from user.models              import User
-from card.models              import Style, StyleLike, StyleRelatedItem, StyleComment
+from card.models              import (Style, StyleLike, StyleRelatedItem,
+                                      StyleComment, Collection,
+                                      CollectionStyle, CollectionFollower)
 from user.utils               import login_decorator
 from .style_related_item_data import random_item
 
@@ -19,24 +21,23 @@ class StyleView(View):
             style_user    = Style.objects.select_related('user').get(id = style_id).user
             comments      = Style.objects.prefetch_related('comments')\
                             .select_related('user').get(id = style_id).comments
-            style = [
-                {
-                    'style_image_url'     : request_style.image_url,
-                    'related_item'        : list(request_style.style_related_items.values()),
-                    'description'         : request_style.description,
-                    'profile_image_url'   : style_user.image_url,
-                    'nickname'            : style_user.nickname,
-                    'profile_description' : style_user.description,
-                    'like_count'          : StyleLike.objects.filter(style_id = style_id).count(),
-                    'comment_count'       : comments.all().count(),
-                    'comment'             : [
-                        {
-                            'profile_image' : comment.user.image_url,
-                            'nickname'      : comment.user.nickname,
-                            'description'   : comment.description,
-                            'date'          : str(comment.updated_at)[2:11],
-                            } for comment in comments.all()]
-                    }]
+            style = {
+                'style_image_url'     : request_style.image_url,
+                'related_item'        : list(request_style.style_related_items.values()),
+                'description'         : request_style.description,
+                'profile_image_url'   : style_user.image_url,
+                'nickname'            : style_user.nickname,
+                'profile_description' : style_user.description,
+                'like_count'          : StyleLike.objects.filter(style_id = style_id).count(),
+                'comment_count'       : comments.all().count(),
+                'comment'             : [
+                    {
+                        'profile_image' : comment.user.image_url,
+                        'nickname'      : comment.user.nickname,
+                        'description'   : comment.description,
+                        'date'          : str(comment.updated_at)[2:11],
+                        } for comment in comments.all()]
+                }
             return JsonResponse({"result": style}, status = 200)
         except Style.DoesNotExist:
             return JsonResponse({"message": "INVALID_STYLE_ID"}, status = 400)
@@ -54,8 +55,7 @@ class DailyLookCardView(View):
                 'date'               : str(style.created_at)[2:11],
                 'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
                 'comment_count'      : style.comments.all().count(),
-                # collection 사용 시 작성
-                # 'collection_count': ,
+                'collection_count'   : CollectionStyle.objects.filter(style_id = style.id).count() ,
                 'comment'            : [
                     {
                         'profile_image' : comment.user.image_url,
@@ -91,7 +91,6 @@ class StyleUploadView(View):
             style_id     = make.id
         ).save()
         return HttpResponse(status = 200)
-
 
 class StyleCommentUploadView(View):
     @login_decorator
@@ -158,8 +157,7 @@ class PopularCardView(View):
                 'date'               : str(style.created_at)[2:11],
                 'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
                 'comment_count'      : style.comments.all().count(),
-                # collection 사용 시 작성
-                # 'collection_count': ,
+                'collection_count'   : CollectionStyle.objects.filter(style_id = style.id).count() ,
                 'comment'            : [
                     {
                         'profile_image' : comment.user.image_url,
@@ -171,3 +169,50 @@ class PopularCardView(View):
             } for style in ordered_style_list]
         return JsonResponse({"card_list": card_list}, status = 200)
 
+class CollectionView(View):
+    def get(self, request, collection_id):
+        try:
+            collection_style_list = CollectionStyle.objects\
+                                   .filter(collection_id = collection_id).all()
+            style_list = [Style.objects.prefetch_related('style_related_items',
+                         'comments').get(id = collection_style.style_id)\
+                          for collection_style in collection_style_list]
+            card_list  = [
+                {
+                    'style_image_url'    : style.image_url,
+                    'related_item'       : list(style.style_related_items.values()),
+                    'profile_image_url'  : style.user.image_url,
+                    'nickname'           : style.user.nickname,
+                    'profile_description': style.user.description,
+                    'date'               : str(style.created_at)[2:11],
+                    'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
+                    'comment_count'      : style.comments.all().count(),
+                    'collection_count'   : CollectionStyle.objects.filter(style_id = style.id).count() ,
+                    'comment'            : [
+                        {
+                            'profile_image' : comment.user.image_url,
+                            'nickname'      : comment.user.nickname,
+                            'description'   : comment.description,
+                            'date'          : str(comment.updated_at)[2:11],
+                            }
+                        for comment in style.comments.all()],
+                } for style in style_list]
+
+            collection      = Collection.objects.get(id = collection_id)
+            collection_info = {
+                "name"           : collection.name,
+                "description"    : collection.description,
+                "follower_count" : CollectionFollower.objects\
+                                  .filter(collection_id = collection_id).count(),
+                "style_count"    : CollectionStyle.objects\
+                                  .filter(collection_id = collection_id).count(),
+                "user"           : {
+                    "nickname"    : collection.user.nickname,
+                    "login_id"    : collection.user.login_id,
+                    "description" : collection.user.description,
+                },
+                "card_list"      : card_list,
+            }
+            return JsonResponse({"result": collection_info}, status = 200)
+        except Collection.DoesNotExist:
+            return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
