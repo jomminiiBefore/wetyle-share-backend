@@ -90,16 +90,16 @@ class SignInView(View):
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
 class CheckSignInIdView(View): 
-        def post(self, request):
-            data = json.loads(request.body)
-            try:
-                login_id = data.get('login_id', None)
-                email    = data.get('email', None)
+    def post(self, request):
+        try:
+            data     = json.loads(request.body)
+            login_id = data.get('login_id', None)
+            email    = data.get('email', None)
 
-                if User.objects.filter(email = email).exists() or User.objects.filter(login_id = login_id).exists():
-                    return HttpResponse(status = 200)
+            if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
+                return HttpResponse(status = 200)
 
-                return JsonResponse({"message": "not existing account"}, status = 400)
-
-            except KeyError:
-                return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+            return JsonResponse({"message": "not existing account"}, status = 200)
+            
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
