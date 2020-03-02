@@ -19,13 +19,19 @@ class Collection(models.Model):
 
 class Style(models.Model):
     description = models.CharField(max_length = 500)
-    image_url   = models.TextField()
     user        = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'styles')
     style_like  = models.ManyToManyField(User, through = 'StyleLike')
     style_related_selling_item = models.ManyToManyField(Product, through = 'StyleRelatedSellingItem')
 
     class Meta:
         db_table = 'styles'
+
+class StyleImage(models.Model):
+    image_url   = models.URLField(max_length = 2000, null = True, blank = True)
+    style       = models.ForeignKey(Style, on_delete = models.CASCADE)
+    
+    class Meta:
+        db_table = 'style_images'
 
 class StyleComment(models.Model):
     description = models.CharField(max_length = 200)
