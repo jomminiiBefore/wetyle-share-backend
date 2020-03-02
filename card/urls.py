@@ -7,6 +7,7 @@ from .views import (
     StyleLikeView,
     PopularCardView,
     CollectionView
+    PopularCardView
 )
 
 urlpatterns = [
