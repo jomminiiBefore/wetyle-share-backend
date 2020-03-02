@@ -92,7 +92,7 @@ class StyleUploadView(View):
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
-class StyleCommentUploadView(View):
+class StyleCommentView(View):
     @login_decorator
     def post(self, request, style_id):
         data = json.loads(request.body)
@@ -108,7 +108,6 @@ class StyleCommentUploadView(View):
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
-class StyleCommentGetView(View):
     def get(self, request, style_id):
         try:
             style = Style.objects.prefetch_related('comments').get(id = style_id)
