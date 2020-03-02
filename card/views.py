@@ -1,6 +1,8 @@
 import jwt
 import json
 import requests
+import boto3
+import uuid
 
 from user.models              import User
 from card.models              import (
@@ -15,6 +17,7 @@ from card.models              import (
 )
 from user.utils               import login_decorator
 from .style_related_item_data import random_item
+from my_settings              import aws_access_key_id, aws_secret_access_key
 
 from django.views             import View
 from django.http              import JsonResponse, HttpResponse
@@ -57,7 +60,7 @@ class DailyLookCardView(View):
         card_list = [
             {
                 'style_id'           : style.id,
-                'style_image_url'    : style.image_url,
+                'style_image_url'    : list(style.styleimage_set.values()),
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,
@@ -241,3 +244,23 @@ class CollectionFollowView(View):
         except Collection.DoesNotExist:
             return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
 
+class StyleImageUploadView(View):
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id = aws_access_key_id,
+        aws_secret_access_key = aws_secret_access_key,
+    )
+
+   # @login_decorator
+    def post(self, request):
+        file = request.FILES['filename']
+
+        self.s3_client.upload_fileobj(
+            file,
+            "wetyle-share",
+            str(uuid.uuid4()),#file.name,
+            ExtraArgs={
+                "ContentType": file.content_type
+            }
+        )
+        return JsonResponse({"message":file.name}, status= 200)

@@ -7,7 +7,8 @@ from .views import (
     StyleLikeView,
     PopularCardView,
     CollectionView,
-    CollectionFollowView
+    CollectionFollowView,
+    StyleImageUploadView,
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
     path('popular/', PopularCardView.as_view()),
     path('collection/<int:collection_id>/', CollectionView.as_view()),
     path('collection/follow/<int:collection_id>/', CollectionFollowView.as_view()),
+    path('style/upload/image/', StyleImageUploadView.as_view()),
 ]
