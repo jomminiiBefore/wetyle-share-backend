@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 driver = webdriver.Chrome(('/Applications/chromedriver'))
 
-with open('./product_lists_10.csv', mode='r') as product_lists:
+with open('./product_lists_02.csv', mode='r') as product_lists:
     reader = csv.reader(product_lists)
 
     product_info = []
@@ -33,8 +33,9 @@ with open('./product_lists_10.csv', mode='r') as product_lists:
             productDetailInfo = driver.find_elements_by_css_selector('#app > div > div > div > div > div > div > div > div > picture > img')
             detailImageList = []
             for image in productDetailInfo:
-                detailImageList.append(image.get_attribute("data-src"))
-
+                if image.get_attribute("data-src")[-2:] !='x0':
+                    detailImageList.append(image.get_attribute("data-src"))
+                    print(image.get_attribute("data-src"))
             allPage        = driver.page_source
             soup           = BeautifulSoup(allPage,'html.parser')
             productAddInfo = soup.select('#app > div > div.Box-fzpncP.iIZfvh > div:nth-child(3) > div > div')
@@ -65,10 +66,10 @@ with open('./product_lists_10.csv', mode='r') as product_lists:
             except Exception as e:
                 print(e)
 
-with open('./product_details_10.csv', mode='w') as product_details:
+with open('./product_details_02.csv', mode='w') as product_details:
     product_writer = csv.writer(product_details)
 
     for product in product_info:
-        product_writer.writerow([product["name"],product["image"],product["price"],product["discount_price"],product["detail_info"],product["add_info"],product["category_id"], product["brand_id"])
+        product_writer.writerow([product["name"],product["image"],product["price"],product["discount_price"],product["detail_info"],product["add_info"],product["category_id"], product["brand_id"]])
 
 driver.quit()
