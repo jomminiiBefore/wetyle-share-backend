@@ -14,28 +14,29 @@ from django.core.exceptions   import ObjectDoesNotExist
 class StyleView(View):
     def get(self, request, style_id):
         try:
-            request_style = Style.objects.get(id = style_id)
-            style_user    = Style.objects.select_related('user').get(id = style_id).user
-            comments      = Style.objects.prefetch_related('comments')\
-                            .select_related('user').get(id = style_id).comments
-            style = [
-                {
-                    'style_image_url'     : request_style.image_url,
-                    'related_item'        : list(request_style.style_related_items.values()),
-                    'description'         : request_style.description,
-                    'profile_image_url'   : style_user.image_url,
-                    'nickname'            : style_user.nickname,
-                    'profile_description' : style_user.description,
-                    'like_count'          : StyleLike.objects.filter(style_id = style_id).count(),
-                    'comment_count'       : comments.all().count(),
-                    'comment'             : [
-                        {
-                            'profile_image' : comment.user.image_url,
-                            'nickname'      : comment.user.nickname,
-                            'description'   : comment.description,
-                            'date'          : str(comment.updated_at)[2:11],
-                            } for comment in comments.all()]
-                    }]
+            style_obj    = Style.objects.get(id=style_id)
+            style_comments = Style.objects.prefetch_related('comments').get(id=style_id).comments.all()
+            styles    = Style.objects.prefetch_related('styleimage_set').get(id=style_id).styleimage_set.all()
+            related_items = Style.objects.prefetch_related('style_related_items').get(id=style_id).style_related_items.all()
+            like_count = StyleLike.objects.filter(style_id = style_id).count()
+
+            style = {
+                'style_image_url'     : [ style.image_url for style in styles],
+                'related_item'        : list(related_items.values()),
+                'description'         : style_obj.description,
+                'profile_image_url'   : style_obj.user.image_url,
+                'nickname'            : style_obj.user.nickname,
+                'profile_description' : style_obj.user.description,
+                'like_count'          : like_count,
+                'comment_count'       : style_comments.count(),
+                'comment'             : [
+                    {
+                        'profile_image' : comment.user.image_url,
+                        'nickname'      : comment.user.nickname,
+                        'description'   : comment.user.description,
+                        'date'          : str(comment.user.updated_at)[2:11],
+                    } for comment in style_comments]
+            }
             return JsonResponse({"result": style}, status = 200)
         except Style.DoesNotExist:
             return JsonResponse({"message": "INVALID_STYLE_ID"}, status = 400)
