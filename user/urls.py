@@ -1,4 +1,4 @@
-from user.views import SignInView, SignUpView, CheckIdView, CheckEmailView
+from user.views import SignInView, SignUpView, CheckIdView, CheckEmailView, CheckSignInIdView
 from django.urls import path
 
 urlpatterns = [
@@ -6,5 +6,6 @@ urlpatterns = [
     path('sign-up/checkid', CheckIdView.as_view()),
     path('sign-up/checkemail', CheckEmailView.as_view()),
     path('sign-in/', SignInView.as_view()),
+    path('sign-in/checkid', CheckSignInIdView.as_view()),
 ]
 
