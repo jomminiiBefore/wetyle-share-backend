@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-from .views import (StyleView, DailyLookCardView, StyleUploadView,
-                    StyleCommentUploadView, StyleCommentGetView,
-                    StyleLikeView, PopularCardView, CollectionView,
-                    CollectionFollowView)
-
-=======
->>>>>>> master
 from django.urls import path
 from .views import (
     StyleView,
@@ -24,12 +16,7 @@ urlpatterns = [
     path('style/upload/', StyleUploadView.as_view()),
     path('style/comment/<int:style_id>/', StyleCommentView.as_view()),
     path('style/like/<int:style_id>/', StyleLikeView.as_view()),
-<<<<<<< HEAD
     path('popular/', PopularCardView.as_view()),
     path('collection/<int:collection_id>/', CollectionView.as_view()),
     path('collection/follow/<int:collection_id>/', CollectionFollowView.as_view()),
-=======
-    path('popular/', PopularCardView.as_view()
-    path('collection/<int:collection_id>/', CollectionView.as_view())
->>>>>>> master
 ]
