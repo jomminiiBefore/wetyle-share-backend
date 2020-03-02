@@ -12,22 +12,19 @@ class StyleView(View):
     def get(self, request, style_id):
         try:
             
+            style_obj    = Style.objects.get(id=style_id)
             style_comments = Style.objects.prefetch_related('comments').get(id=style_id).comments.all()
-            
-            # style_user    = Style.objects.get(id=style_id)
-            style_image    = Style.objects.prefetch_related('styleimage_set').get(id=style_id)
-
+            styles    = Style.objects.prefetch_related('styleimage_set').get(id=style_id).styleimage_set.all()
+            related_items = Style.objects.prefetch_related('style_related_items').get(id=style_id).style_related_items.all()
             like_count = StyleLike.objects.filter(style_id = style_id).count()
 
             style = {
-                # 'style_image_url'     : list(style.styleimage_set.values()),
-                # 'related_item'        : list(style.style_related_items.values()),
-
-                # 'description'         : style.description,
-                'profile_image_url'   : style_image.styleimage_set.get().image_url,
-                'nickname'            : style_image.user.nickname,
-                'profile_description' : style_image.user.description,
-
+                'style_image_url'     : [ style.image_url for style in styles],
+                'related_item'        : list(related_items.values()),
+                'description'         : style_obj.description,
+                'profile_image_url'   : style_obj.user.image_url,
+                'nickname'            : style_obj.user.nickname,
+                'profile_description' : style_obj.user.description,
                 'like_count'          : like_count,
                 'comment_count'       : style_comments.count(),
                 'comment'             : [
