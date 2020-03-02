@@ -33,8 +33,9 @@ with open('./product_lists_08.csv', mode='r') as product_lists:
             productDetailInfo = driver.find_elements_by_css_selector('#app > div > div > div > div > div > div > div > div > picture > img')
             detailImageList = []
             for image in productDetailInfo:
-                detailImageList.append(image.get_attribute("data-src"))
-
+                if image.get_attribute("data-src")[-2:] !='x0':
+                    detailImageList.append(image.get_attribute("data-src"))
+                    print(image.get_attribute("data-src"))
             allPage        = driver.page_source
             soup           = BeautifulSoup(allPage,'html.parser')
             productAddInfo = soup.select('#app > div > div.Box-fzpncP.iIZfvh > div:nth-child(3) > div > div')
@@ -48,7 +49,6 @@ with open('./product_lists_08.csv', mode='r') as product_lists:
             print("error",e, url)
         finally:
             try:
-                print(productPrice.text, productDiscountPrice.text)
                 product_info.append(
                     {
                         "name"           : productName.text,
