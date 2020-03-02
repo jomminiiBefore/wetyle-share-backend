@@ -5,6 +5,8 @@ from .views import (
     StyleUploadView,
     StyleCommentView,
     StyleLikeView,
+    PopularCardView,
+    CollectionView
     PopularCardView
 )
 
@@ -15,4 +17,5 @@ urlpatterns = [
     path('style/comment/<int:style_id>/', StyleCommentView.as_view()),
     path('style/like/<int:style_id>/', StyleLikeView.as_view()),
     path('popular/', PopularCardView.as_view()
+    path('collection/<int:collection_id>/', CollectionView.as_view())
 ]

@@ -3,7 +3,16 @@ import json
 import requests
 
 from user.models              import User
-from card.models              import Style, StyleLike, StyleRelatedItem, StyleComment, StyleImage
+from card.models              import (
+    Style,
+    StyleLike,
+    StyleRelatedItem,
+    StyleComment,
+    StyleImage,
+    Collection,
+    CollectionStyle,
+    CollectionFollower
+)
 from user.utils               import login_decorator
 from .style_related_item_data import random_item
 
@@ -169,3 +178,53 @@ class PopularCardView(View):
                     for comment in style.comments.all()],
             } for style in ordered_style_list]
         return JsonResponse({"card_list": card_list}, status = 200)
+
+class CollectionView(View):
+    def get(self, request, collection_id):
+        try:
+            collection_style_list = CollectionStyle.objects.filter(collection_id = collection_id).all()
+            style_list = [ Style.objects.prefetch_related('style_related_items',
+                'comments').get(id = collection_style.style_id) \
+            for collection_style in collection_style_list]
+
+            card_list  = [
+                {
+                    'style_id'           : style.id,
+                    'style_image_url'    : list(style.styleimage_set.values()),
+                    'related_item'       : list(style.style_related_items.values()),
+                    'profile_image_url'  : style.user.image_url,
+                    'nickname'           : style.user.nickname,
+                    'profile_description': style.user.description,
+                    'date'               : str(style.created_at)[2:11],
+                    'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
+                    'comment_count'      : style.comments.all().count(),
+                    'collection_count'   : CollectionStyle.objects.filter(style_id = style.id).count() ,
+                    'comment'            : [
+                        {
+                            'profile_image' : comment.user.image_url,
+                            'nickname'      : comment.user.nickname,
+                            'description'   : comment.description,
+                            'date'          : str(comment.updated_at)[2:11],
+                            }
+                        for comment in style.comments.all()],
+                } for style in style_list]
+
+            collection      = Collection.objects.get(id = collection_id)
+            collection_info = {
+                'collection_id'   : collection.id,
+                'image_url'       : collection.image_url,
+                'name'            : collection.name,
+                'description'     : collection.description,
+                'follower_count'  : CollectionFollower.objects.filter(collection_id = collection_id).count(),
+                'style_count'     : CollectionStyle.objects.filter(collection_id = collection_id).count(),
+                'user'            : 
+                {
+                    'nickname'    : collection.user.nickname,
+                    'login_id'    : collection.user.login_id,
+                    'description' : collection.user.description,
+                },
+                'card_list'       : card_list,
+            }
+            return JsonResponse({"result": collection_info}, status = 200)
+        except Collection.DoesNotExist:
+            return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
