@@ -4,7 +4,8 @@ from .views import (
     DailyLookCardView,
     StyleUploadView,
     StyleCommentView,
-    StyleLikeView
+    StyleLikeView,
+    PopularCardView
 )
 
 urlpatterns = [
@@ -12,5 +13,6 @@ urlpatterns = [
     path('dailylook/', DailyLookCardView.as_view()),
     path('style/upload/', StyleUploadView.as_view()),
     path('style/comment/<int:style_id>/', StyleCommentView.as_view()),
-    path('style/like/<int:style_id>/', StyleLikeView.as_view())
+    path('style/like/<int:style_id>/', StyleLikeView.as_view()),
+    path('popular/', PopularCardView.as_view()
 ]
