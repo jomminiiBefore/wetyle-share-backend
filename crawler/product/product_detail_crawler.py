@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 
 driver = webdriver.Chrome(('/Applications/chromedriver'))
 
-with open('./product_lists_02.csv', mode='r') as product_lists:
+with open('./product_lists_03.csv', mode='r') as product_lists:
     reader = csv.reader(product_lists)
 
     product_info = []
