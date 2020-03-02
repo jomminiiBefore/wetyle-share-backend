@@ -137,8 +137,8 @@ class StyleLikeView(View):
             if StyleLike.objects.filter(Q(user_id = click_user_id) & Q(style_id = style_id)).exists():
                 StyleLike.objects.filter(Q(user_id = click_user_id) & Q(style_id = style_id)).delete()
                 return HttpResponse(status = 200)
-            else:
-                Style.objects.get(id = style_id).style_like.add(User.objects.get(id = click_user_id))
-                return HttpResponse(status = 200)
+            
+            Style.objects.get(id = style_id).style_like.add(User.objects.get(id = click_user_id))
+            return HttpResponse(status = 200)
         except Style.DoesNotExist:
             return JsonResponse({"message": "INVALID_STYLE_ID"}, status = 400)
