@@ -202,6 +202,7 @@ class CollectionView(View):
             collection      = Collection.objects.get(id = collection_id)
             collection_info = {
                 'collection_id'  : collection.id,
+                'image_url'         : collection.image_url,
                 'name'           : collection.name,
                 'description'    : collection.description,
                 'follower_count' : CollectionFollower.objects\
