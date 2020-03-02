@@ -236,9 +236,8 @@ class CollectionFollowView(View):
             if CollectionFollower.objects.filter(Q(user_id = request.user.id) & Q(collection_id = collection_id)).exists():
                 CollectionFollower.objects.filter(Q(user_id = request.user.id) & Q(collection_id = collection_id)).delete()
                 return HttpResponse(status = 200)
-            else:
-                Collection.objects.get(id = collection_id).collection_follower.add(User.objects.get(id = request.user.id))
-                return HttpResponse(status = 200)
+            Collection.objects.get(id = collection_id).collection_follower.add(User.objects.get(id = request.user.id))
+            return HttpResponse(status = 200)
         except Collection.DoesNotExist:
             return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
 
