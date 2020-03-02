@@ -22,6 +22,8 @@ class Style(models.Model):
     user        = models.ForeignKey(User, on_delete = models.CASCADE, related_name = 'styles')
     style_like  = models.ManyToManyField(User, through = 'StyleLike')
     style_related_selling_item = models.ManyToManyField(Product, through = 'StyleRelatedSellingItem')
+    created_at  = models.DateTimeField(auto_now_add = True)
+    updated_at  = models.DateTimeField(auto_now = True)
 
     class Meta:
         db_table = 'styles'
