@@ -49,7 +49,6 @@ with open('./product_lists_02.csv', mode='r') as product_lists:
             print("error",e, url)
         finally:
             try:
-                print(productPrice.text, productDiscountPrice.text)
                 product_info.append(
                     {
                         "name"           : productName.text,
@@ -66,7 +65,7 @@ with open('./product_lists_02.csv', mode='r') as product_lists:
             except Exception as e:
                 print(e)
 
-with open('./product_details_02.csv', mode='w') as product_details:
+with open('./product_details_03.csv', mode='w') as product_details:
     product_writer = csv.writer(product_details)
 
     for product in product_info:
