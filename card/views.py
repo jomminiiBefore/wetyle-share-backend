@@ -3,7 +3,7 @@ import json
 import requests
 
 from user.models              import User
-from card.models              import Style, StyleLike, StyleRelatedItem
+from card.models              import Style, StyleLike, StyleRelatedItem, StyleComment, StyleImage
 from user.utils               import login_decorator
 from .style_related_item_data import random_item
 
@@ -45,6 +45,7 @@ class DailyLookCardView(View):
         style_list = Style.objects.all().prefetch_related('style_related_items', 'comments')
         card_list = [
             {
+                'style_id'           : style.id,
                 'style_image_url'    : style.image_url,
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
@@ -53,8 +54,6 @@ class DailyLookCardView(View):
                 'date'               : str(style.created_at)[2:11],
                 'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
                 'comment_count'      : style.comments.all().count(),
-                # collection 사용 시 작성
-                # 'collection_count': ,
                 'comment'            : [
                     {
                         'profile_image' : comment.user.image_url,
@@ -73,23 +72,25 @@ class StyleUploadView(View):
         try:
             make = Style.objects.create(
                 description  = data['description'],
-                image_url    = data['image_url'],
                 user_id      = request.user.id
             )
+
+            StyleImage.objects.create(
+                image_url = data['image_url'],
+                style_id = make.id
+            )
+
+            StyleRelatedItem.objects.create(
+                pants        = random_item_list['pants'],
+                skirt        = random_item_list['skirt'],
+                shoes        = random_item_list['shoes'],
+                bag          = random_item_list['bag'],
+                accessory    = random_item_list['accessory'],
+                etc          = random_item_list['etc'],
+                style_id     = make.id
+            )
+
+            return HttpResponse(status = 200)
+
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
-
-        random_item_list = random_item()
-        StyleRelatedItem(
-            pants        = random_item_list['pants'],
-            skirt        = random_item_list['skirt'],
-            shoes        = random_item_list['shoes'],
-            bag          = random_item_list['bag'],
-            accessory    = random_item_list['accessory'],
-            etc          = random_item_list['etc'],
-            style_id     = make.id
-        ).save()
-        return HttpResponse(status = 200)
-
-
-
