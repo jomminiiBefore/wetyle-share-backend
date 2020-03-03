@@ -89,22 +89,47 @@ class StyleUploadView(View):
                 user_id      = request.user.id
             )
 
-            StyleImage.objects.create(
-                image_url = data['image_url'],
-                style_id = make.id
+            for image in data['image_url_list']:
+                StyleImage.objects.create(
+                    image_url = image,
+                    style_id = make.id
             )
-
+            related_items = random_item()
             StyleRelatedItem.objects.create(
-                pants        = random_item_list['pants'],
-                skirt        = random_item_list['skirt'],
-                shoes        = random_item_list['shoes'],
-                bag          = random_item_list['bag'],
-                accessory    = random_item_list['accessory'],
-                etc          = random_item_list['etc'],
+                pants        = related_items['pants'],
+                skirt        = related_items['skirt'],
+                shoes        = related_items['shoes'],
+                bag          = related_items['bag'],
+                accessory    = related_items['accessory'],
+                etc          = related_items['etc'],
                 style_id     = make.id
             )
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+        return HttpResponse(status = 200)
+
+class StyleImageUploadView(View):
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id = aws_access_key_id,
+        aws_secret_access_key = aws_secret_access_key,
+    )
+   # @login_decorator
+    def post(self, request):
+        image_url_list = []
+        for file in request.FILES.getlist('filename'):
+            url_generator = str(uuid.uuid4())
+            self.s3_client.upload_fileobj(
+                file,
+                "wetyle-share",
+                url_generator,
+                ExtraArgs={
+                    "ContentType": file.content_type
+                }
+            )
+            image_url_list.append(f'https://wetyle-share.s3.ap-northeast-2.amazonaws.com/{url_generator}')
+        print(request.FILES)
+        return JsonResponse({"message":image_url_list}, status= 200)
 
 class StyleCommentView(View):
     @login_decorator
@@ -243,24 +268,3 @@ class CollectionFollowView(View):
             return HttpResponse(status = 200)
         except Collection.DoesNotExist:
             return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
-
-class StyleImageUploadView(View):
-    s3_client = boto3.client(
-        's3',
-        aws_access_key_id = aws_access_key_id,
-        aws_secret_access_key = aws_secret_access_key,
-    )
-
-   # @login_decorator
-    def post(self, request):
-        file = request.FILES['filename']
-
-        self.s3_client.upload_fileobj(
-            file,
-            "wetyle-share",
-            str(uuid.uuid4()),#file.name,
-            ExtraArgs={
-                "ContentType": file.content_type
-            }
-        )
-        return JsonResponse({"message":file.name}, status= 200)
