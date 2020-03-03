@@ -36,11 +36,7 @@ class SecondCategory(models.Model):
 
 class ThirdCategory(models.Model):
     name            = models.CharField(max_length = 50)
-<<<<<<< HEAD
     first_category  = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
-=======
-    first_category   = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
->>>>>>> master
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
 
     class Meta:
