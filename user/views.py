@@ -46,7 +46,7 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
-class CheckSignupIdView(View):
+class CheckSignUpIdView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
