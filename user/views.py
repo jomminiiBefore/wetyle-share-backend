@@ -5,7 +5,8 @@ import jwt
 
 
 from my_settings import SECRET_KEY
-from .models     import User
+from .models     import User, Follower
+from .utils      import login_decorator
 
 from django.views           import View
 from django.http            import JsonResponse, HttpResponse
@@ -89,17 +90,29 @@ class SignInView(View):
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
+class UserFollowView(View):
+    @login_decorator
+    def get(self, request, followee_id):
+        try:
+            if Follower.objects.filter(Q(follower_id = request.user.id) & Q(followee_id = followee_id)).exists():
+                Follower.objects.filter(Q(follower_id = request.user.id) & Q(followee_id = followee_id)).delete()
+                return HttpResponse(status = 200)
+            User.objects.get(id = request.user.id).follow_relation.add(User.objects.get(id = followee_id))
+            return HttpResponse(status = 200)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "INVALID_USER_ID"}, status = 400)
+
 class CheckSignInIdView(View): 
-        def post(self, request):
-            data = json.loads(request.body)
-            try:
-                login_id = data.get('login_id', None)
-                email    = data.get('email', None)
+    def post(self, request):
+        try:
+            data     = json.loads(request.body)
+            login_id = data.get('login_id', None)
+            email    = data.get('email', None)
 
-                if User.objects.filter(email = email).exists() or User.objects.filter(login_id = login_id).exists():
-                    return HttpResponse(status = 200)
+            if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
+                return HttpResponse(status = 200)
 
-                return JsonResponse({"message": "not existing account"}, status = 400)
-
-            except KeyError:
-                return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+            return JsonResponse({"message": "not existing account"}, status = 200)
+            
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)

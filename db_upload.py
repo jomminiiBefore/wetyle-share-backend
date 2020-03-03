@@ -73,3 +73,14 @@ with open('./upload/style_related_item.csv', mode='r') as style_related_item_lis
             etc       = item[5],
             style_id  = item[6],
         ).save()
+
+# StyleLike
+with open('./upload/style_like.csv', mode='r') as style_like_lists:
+    reader = csv.reader(style_like_lists, delimiter=',')
+
+    for item in list(reader)[1:]:
+        StyleLike(
+            style_id  = item[0],
+            user_id   = item[1],
+        ).save()
+
