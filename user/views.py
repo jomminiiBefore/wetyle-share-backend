@@ -3,7 +3,6 @@ import requests
 import bcrypt
 import jwt
 
-
 from my_settings import SECRET_KEY
 from .models     import User
 
@@ -46,31 +45,19 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
-class CheckIdView(View):
+class CheckSignupIdView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
-            login_id = data.get('login_id', None)
-            if User.objects.filter(login_id = login_id).exists():
-                return JsonResponse({"message": "existing login_id"}, status = 400)
-                        
-            return HttpResponse(status = 200)
-
-        except KeyError:
-            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
-
-class CheckEmailView(View):
-    def post(self, request):
-        data = json.loads(request.body)
-        try:            
+            login_id = data.get('login_id', None)            
             email = data.get('email', None)
-            if User.objects.filter(email = email).exists():
-                return JsonResponse({"message": "existing email"}, status = 400)
-            
+            if User.objects.filter(Q(login_id = login_id)|Q(email = email)).exists():
+                return JsonResponse({"message": "existing login_id"}, status = 400)
             return HttpResponse(status = 200)
-
+                         
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+
 
 class SignInView(View):
     def post(self, request):
@@ -96,7 +83,7 @@ class CheckSignInIdView(View):
                 login_id = data.get('login_id', None)
                 email    = data.get('email', None)
 
-                if User.objects.filter(email = email).exists() or User.objects.filter(login_id = login_id).exists():
+                if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
                     return HttpResponse(status = 200)
 
                 return JsonResponse({"message": "not existing account"}, status = 400)
