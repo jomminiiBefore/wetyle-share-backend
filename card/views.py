@@ -244,7 +244,6 @@ class CollectionFollowView(View):
 class SearchCollectionView(View):
     def get(self, request):
         query = request.GET.get('query', None)
-        result = []
         searched_list = Collection.objects.filter(Q(name__icontains = query) | Q(description__icontains = query)).all()
         collection_list = [
             {
