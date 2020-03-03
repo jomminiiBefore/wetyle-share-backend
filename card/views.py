@@ -34,7 +34,7 @@ class StyleView(View):
             like_count = StyleLike.objects.filter(style_id = style_id).count()
 
             style = {
-                'style_image_url'     : [ style.image_url for style in styles],
+                'style_image_url'     : [style.image_url for style in styles],
                 'related_item'        : list(related_items.values()),
                 'description'         : style_obj.description,
                 'profile_image_url'   : style_obj.user.image_url,
@@ -60,7 +60,7 @@ class DailyLookCardView(View):
         card_list = [
             {
                 'style_id'           : style.id,
-                'style_image_url'    : list(style.styleimage_set.values()),
+                'style_image_url'    : list(style.styleimage_set.values('image_url')),
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,
@@ -187,7 +187,7 @@ class PopularCardView(View):
         card_list = [
             {
                 'style_id'           : style.id, 
-                'style_image_url'    : style.image_url,
+                'style_image_url'    : list(style.styleimage_set.values('image_url')),
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,
@@ -217,7 +217,7 @@ class CollectionView(View):
             card_list  = [
                 {
                     'style_id'           : style.id,
-                    'style_image_url'    : list(style.styleimage_set.values()),
+                    'style_image_url'    : list(style.styleimage_set.values('image_url')),
                     'related_item'       : list(style.style_related_items.values()),
                     'profile_image_url'  : style.user.image_url,
                     'nickname'           : style.user.nickname,
@@ -267,3 +267,20 @@ class CollectionFollowView(View):
             return HttpResponse(status = 200)
         except Collection.DoesNotExist:
             return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
+
+class SearchCollectionView(View):
+    def get(self, request):
+        query = request.GET.get('query', None)
+        searched_list = Collection.objects.filter(Q(name__icontains = query) | Q(description__icontains = query)).all()
+        collection_list = [
+            {
+                'collection_id'        : collection.id,
+                'collection_name'      : collection.name,
+                'collection_image_url' : collection.image_url,
+                'description'          : collection.description,
+                'profile_image_url'    : collection.user.image_url,
+                'nickname'             : collection.user.nickname,
+                'style_count'          : collection.collection_style.count() ,
+                'follower_count'       : collection.collection_follower.count()
+            } for collection in searched_list]
+        return JsonResponse({"result" : collection_list}, status = 200)
