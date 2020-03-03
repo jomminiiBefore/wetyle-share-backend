@@ -241,3 +241,19 @@ class CollectionFollowView(View):
         except Collection.DoesNotExist:
             return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
 
+class SearchCollectionView(View):
+    def get(self, request):
+        query = request.GET.get('query', None)
+        searched_list = Collection.objects.filter(Q(name__icontains = query) | Q(description__icontains = query)).all()
+        collection_list = [
+            {
+                'collection_id'        : collection.id,
+                'collection_name'      : collection.name,
+                'collection_image_url' : collection.image_url,
+                'description'          : collection.description,
+                'profile_image_url'    : collection.user.image_url,
+                'nickname'             : collection.user.nickname,
+                'style_count'          : collection.collection_style.count() ,
+                'follower_count'       : collection.collection_follower.count()
+            } for collection in searched_list]
+        return JsonResponse({"result" : collection_list}, status = 200)
