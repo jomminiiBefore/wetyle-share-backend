@@ -2,20 +2,20 @@ from django.db import models
 from user.models import User
 
 class Product(models.Model):
-    name            = models.CharField(max_length = 50)
-    image_url       = models.URLField(max_length = 2000)
+    name            = models.TextField()    
     first_category  = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
     third_category  = models.ForeignKey('ThirdCategory', on_delete = models.SET_NULL, null = True)
-    brand           = models.ForeignKey('Brand', on_delete = models.SET_NULL, null = True)
+    brand           = models.ForeignKey('Brand', on_delete = models.SET_NULL, related_name = 'brands', null = True)
     price           = models.IntegerField(default = 0)
     discounted_price= models.IntegerField(default = 0)
     point           = models.IntegerField(default = 0)
-    add_info        = models.CharField(max_length = 2000)
+    add_info        = models.CharField(max_length = 5000)
     created_at      = models.DateTimeField(auto_now_add = True)
     updated_at      = models.DateTimeField(auto_now = True)
     product_color   = models.ManyToManyField('Color', through = 'ProductColor')
-    procuct_size    = models.ManyToManyField('Size', through = 'ProductSize')
+    product_size    = models.ManyToManyField('Size', through = 'ProductSize')
+    product_like    = models.ManyToManyField(User, through = 'ProductLike')
 
     class Meta:
         db_table = 'products'
@@ -35,7 +35,7 @@ class SecondCategory(models.Model):
 
 class ThirdCategory(models.Model):
     name            = models.CharField(max_length = 50)
-    fist_category   = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
+    first_category   = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
 
     class Meta:
@@ -45,10 +45,10 @@ class Brand(models.Model):
     name            = models.CharField(max_length = 50)
     description     = models.CharField(max_length = 500)
     created_at      = models.DateTimeField(auto_now_add = True)
-    updated_at      = models.DateTimeField(auto_now = True)
+    updated_at      = models.DateTimeField(auto_now = True)    
     small_image_url = models.URLField(max_length = 2000)
     large_image_url = models.URLField(max_length = 2000)
-    
+
     class Meta:
         db_table = 'brands'
 
