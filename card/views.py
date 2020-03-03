@@ -79,6 +79,24 @@ class DailyLookCardView(View):
             } for style in style_list]
         return JsonResponse({"card_list": card_list}, status = 200)
 
+class DailyLookCollectionView(View):
+    def get(self, request):
+        ordered_collection_list = Collection.objects.prefetch_related('collection_follower', 'collection_style')\
+                                  .annotate(follower_count = Count('collection_follower')).order_by('-follower_count')
+        collection_list = [
+            {
+                'collection_id'        : collection.id,
+                'collection_name'      : collection.name,
+                'collection_image_url' : collection.image_url,
+                'description'          : collection.description,
+                'profile_image_url'    : collection.user.image_url,
+                'nickname'             : collection.user.nickname,
+                'style_count'          : collection.collection_style.count() ,
+                'follower_count'       : collection.collection_follower.count()
+            }
+            for collection in ordered_collection_list[:10]]
+        return JsonResponse({"collection_list": collection_list}, status = 200)
+
 class StyleUploadView(View):
     @login_decorator
     def post(self,request):
