@@ -17,7 +17,7 @@ from card.models              import (
 )
 from user.utils               import login_decorator
 from .style_related_item_data import random_item
-from my_settings              import aws_access_key_id, aws_secret_access_key
+from my_settings              import aws_access_key_id, aws_secret_access_key, aws_s3_address
 
 from django.views             import View
 from django.http              import JsonResponse, HttpResponse
@@ -127,8 +127,8 @@ class StyleImageUploadView(View):
                     "ContentType": file.content_type
                 }
             )
-            image_url_list.append(f'https://wetyle-share.s3.ap-northeast-2.amazonaws.com/{url_generator}')
-        return JsonResponse({"message":image_url_list}, status= 200)
+            image_url_list.append(f'{aws_s3_address}{url_generator}')
+        return JsonResponse({"image_url_list":image_url_list}, status= 200)
 
 class StyleCommentView(View):
     @login_decorator
