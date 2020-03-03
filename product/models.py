@@ -105,7 +105,7 @@ class Size(models.Model):
         db_table = 'sizes'
 
 class ProductStock(models.Model):
-    product         = models.ForeignKey('Product', on_delete = models.SET_NULL, null = True)
+    product         = models.ForeignKey('Product', on_delete = models.CASCADE)
     color           = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)
     size            = models.ForeignKey('Size', on_delete = models.SET_NULL, null = True)
     stock           = models.IntegerField()
@@ -114,7 +114,7 @@ class ProductStock(models.Model):
         db_table = 'product_stocks'
 
 class OrderedProduct(models.Model):
-    order           = models.ForeignKey('Order', on_delete = models.SET_NULL, null = True)
+    order           = models.ForeignKey('Order', on_delete = models.CASCADE)
     product         = models.ForeignKey('Product', on_delete = models.SET_NULL, null = True)
     size            = models.ForeignKey('Size', on_delete = models.SET_NULL, null = True)
     color           = models.ForeignKey('Color', on_delete = models.SET_NULL, null = True)

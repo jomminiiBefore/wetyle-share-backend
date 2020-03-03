@@ -13,8 +13,8 @@ result = []
 with open('second_category.csv', mode='r') as second_category:
     reader = csv.reader(second_category)
 
-    for list in reader:
-        result.append(list)
+    for secondcategory in reader:
+        result.append(secondcategory)
 
 for second in result:
     print(second)
