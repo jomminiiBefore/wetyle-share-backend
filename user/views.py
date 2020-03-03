@@ -89,4 +89,4 @@ class CheckSignInIdView(View):
                 return JsonResponse({"message": "not existing account"}, status = 400)
 
             except KeyError:
-                return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+                return JsonResponse({"message": "INVALID_KEYS"}, status = 400) 

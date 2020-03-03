@@ -7,4 +7,3 @@ urlpatterns = [
     path('sign-in/', SignInView.as_view()),
     path('sign-in/checkid', CheckSignInIdView.as_view()),
 ]
-
