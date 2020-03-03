@@ -114,7 +114,7 @@ class StyleImageUploadView(View):
         aws_access_key_id = aws_access_key_id,
         aws_secret_access_key = aws_secret_access_key,
     )
-   # @login_decorator
+    @login_decorator
     def post(self, request):
         image_url_list = []
         for file in request.FILES.getlist('filename'):
@@ -128,7 +128,6 @@ class StyleImageUploadView(View):
                 }
             )
             image_url_list.append(f'https://wetyle-share.s3.ap-northeast-2.amazonaws.com/{url_generator}')
-        print(request.FILES)
         return JsonResponse({"message":image_url_list}, status= 200)
 
 class StyleCommentView(View):
