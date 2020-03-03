@@ -11,8 +11,7 @@ class Product(models.Model):
     price           = models.IntegerField(default = 0)
     discounted_price= models.IntegerField(default = 0)
     point           = models.IntegerField(default = 0)
-    detailed_info   = models.TextField()
-    add_info        = models.CharField(max_length = 1000)
+    add_info        = models.CharField(max_length = 2000)
     created_at      = models.DateTimeField(auto_now_add = True)
     updated_at      = models.DateTimeField(auto_now = True)
     product_color   = models.ManyToManyField('Color', through = 'ProductColor')
@@ -52,6 +51,13 @@ class Brand(models.Model):
     
     class Meta:
         db_table = 'brands'
+
+class ProductDetailImage(models.Model):
+    image_url       = models.URLField(max_length = 2000)
+    product         = models.ForeignKey('Product', on_delete = models.CASCADE)
+
+    class Meta:
+        db_table = 'product_detail_images'
 
 class ProductLike(models.Model):
     product         = models.ForeignKey('Product', on_delete = models.CASCADE)
