@@ -2,7 +2,8 @@ from django.db import models
 from user.models import User
 
 class Product(models.Model):
-    name            = models.TextField()    
+    name            = models.CharField(max_length = 200)
+    image_url       = models.URLField(max_length = 2000)
     first_category  = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
     third_category  = models.ForeignKey('ThirdCategory', on_delete = models.SET_NULL, null = True)
@@ -35,7 +36,11 @@ class SecondCategory(models.Model):
 
 class ThirdCategory(models.Model):
     name            = models.CharField(max_length = 50)
+<<<<<<< HEAD
+    first_category  = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
+=======
     first_category   = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
+>>>>>>> master
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
 
     class Meta:
