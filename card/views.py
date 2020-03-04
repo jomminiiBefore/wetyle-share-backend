@@ -314,6 +314,6 @@ class CollectionUploadView(View):
                 description  = data['description'],
                 user_id      = request.user.id
             )
+            return HttpResponse(status = 200)
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
-        return HttpResponse(status = 200)
