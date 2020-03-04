@@ -4,7 +4,7 @@ import requests
 import boto3
 import uuid
 
-from user.models              import User
+from user.models              import User, Follower
 from card.models              import (
     Style,
     StyleLike,
@@ -96,6 +96,33 @@ class DailyLookCollectionView(View):
             }
             for collection in ordered_collection_list[:10]]
         return JsonResponse({"collection_list": collection_list}, status = 200)
+
+class FollowingCardView(View):
+    @login_decorator
+    def get(self, request):
+        followee_list = list(Follower.objects.filter(follower_id = request.user.id).values('followee_id'))
+        style_list = [Style.objects.get(id = followee['followee_id']) for followee in followee_list]
+        card_list = [
+            {
+                'style_id'           : style.id,
+                'style_image_url'    : list(style.styleimage_set.values('image_url')),
+                'related_item'       : list(style.style_related_items.values()),
+                'profile_image_url'  : style.user.image_url,
+                'nickname'           : style.user.nickname,
+                'profile_description': style.user.description,
+                'date'               : str(style.created_at)[2:11],
+                'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
+                'comment_count'      : style.comments.all().count(),
+                'comment'            : [
+                    {
+                        'profile_image' : comment.user.image_url,
+                        'nickname'      : comment.user.nickname,
+                        'description'   : comment.description,
+                        'date'          : str(comment.updated_at)[2:11],
+                        }
+                    for comment in style.comments.all()],
+            } for style in style_list]
+        return JsonResponse({"card_list": card_list}, status = 200)
 
 class StyleUploadView(View):
     @login_decorator
