@@ -126,7 +126,7 @@ class StyleUploadView(View):
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
         return HttpResponse(status = 200)
 
-class StyleImageUploadView(View):
+class ImageUploadView(View):
     s3_client = boto3.client(
         's3',
         aws_access_key_id = aws_access_key_id,
@@ -302,3 +302,18 @@ class SearchCollectionView(View):
                 'follower_count'       : collection.collection_follower.count()
             } for collection in searched_list]
         return JsonResponse({"result" : collection_list}, status = 200)
+
+class CollectionUploadView(View):
+    @login_decorator
+    def post(self,request):
+        data = json.loads(request.body)
+        try:
+            Collection.objects.create(
+                name         = data['name'],
+                image_url    = data['image_url'],
+                description  = data['description'],
+                user_id      = request.user.id
+            )
+            return HttpResponse(status = 200)
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
