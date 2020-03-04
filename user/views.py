@@ -37,7 +37,8 @@ class SignUpView(View):
                 email     = data['email'],
                 birthday  = data.get('birthday', None),
                 gender    = data['gender'],
-                image_url = data.get('image_url',None),
+                image_url = data.get('image_url', None),
+                kakao_id  = data.get('kakao_id', None),
             ).save()
 
             token = jwt.encode({'login_id':data['login_id']}, SECRET_KEY, algorithm = 'HS256')
@@ -136,7 +137,7 @@ class KakaoSignInView(View):
             user_info           = {"kakao_id" : kakao_id, "email" : email}
             return JsonResponse({"user_info" : user_info}, status = 200)
         except KeyError:
-            return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
+            return JsonResponse({"message": "INVALID_KEY"}, status = 400)
         except access_token.DoesNotExist:
             return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
 
