@@ -4,7 +4,7 @@ import bcrypt
 import jwt
 
 
-from my_settings import SECRET_KEY
+from my_settings import SECRET_KEY, KAKAO_KEY
 from .models     import User, Follower
 from .utils      import login_decorator
 
@@ -37,7 +37,8 @@ class SignUpView(View):
                 email     = data['email'],
                 birthday  = data.get('birthday', None),
                 gender    = data['gender'],
-                image_url = data.get('image_url',None),
+                image_url = data.get('image_url', None),
+                kakao_id  = data.get('kakao_id', None),
             ).save()
 
             token = jwt.encode({'login_id':data['login_id']}, SECRET_KEY, algorithm = 'HS256')
@@ -54,7 +55,7 @@ class CheckIdView(View):
             login_id = data.get('login_id', None)
             if User.objects.filter(login_id = login_id).exists():
                 return JsonResponse({"message": "existing login_id"}, status = 400)
-                        
+
             return HttpResponse(status = 200)
 
         except KeyError:
@@ -63,11 +64,11 @@ class CheckIdView(View):
 class CheckEmailView(View):
     def post(self, request):
         data = json.loads(request.body)
-        try:            
+        try:
             email = data.get('email', None)
             if User.objects.filter(email = email).exists():
                 return JsonResponse({"message": "existing email"}, status = 400)
-            
+
             return HttpResponse(status = 200)
 
         except KeyError:
@@ -102,7 +103,7 @@ class UserFollowView(View):
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER_ID"}, status = 400)
 
-class CheckSignInIdView(View): 
+class CheckSignInIdView(View):
     def post(self, request):
         try:
             data     = json.loads(request.body)
@@ -113,6 +114,30 @@ class CheckSignInIdView(View):
                 return HttpResponse(status = 200)
 
             return JsonResponse({"message": "not existing account"}, status = 200)
-            
+
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+
+class KakaoSignInView(View):
+    def get(self, request):
+        try:
+            access_token    = request.headers.get('Authorization', None)
+            profile_request = requests.get(
+                "https://kapi.kakao.com/v2/user/me", headers={"Authorization" : f"Bearer {access_token}"}
+            )
+            profile_json    = profile_request.json()
+            kakao_account   = profile_json.get("kakao_account")
+            email           = kakao_account.get("email", None)
+            kakao_id        = profile_json.get("id")
+
+            if User.objects.filter(kakao_id = kakao_id).exists():
+                user            = User.objects.get(kakao_id = kakao_id)
+                token           = jwt.encode({"login_id": user.login_id}, SECRET_KEY, algorithm = "HS256")
+                return JsonResponse({"token": token.decode("utf-8")}, status=200)
+            user_info           = {"kakao_id" : kakao_id, "email" : email}
+            return JsonResponse({"user_info" : user_info}, status = 200)
+        except KeyError:
+            return JsonResponse({"message": "INVALID_KEY"}, status = 400)
+        except access_token.DoesNotExist:
+            return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
+

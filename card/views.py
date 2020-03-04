@@ -46,7 +46,7 @@ class StyleView(View):
                     {
                         'profile_image' : comment.user.image_url,
                         'nickname'      : comment.user.nickname,
-                        'description'   : comment.user.description,
+                        'description'   : comment.description,
                         'date'          : str(comment.user.updated_at)[2:11],
                     } for comment in style_comments]
             }
