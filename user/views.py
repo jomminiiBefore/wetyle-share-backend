@@ -128,16 +128,15 @@ class KakaoSignInView(View):
             kakao_account   = profile_json.get("kakao_account")
             email           = kakao_account.get("email", None)
             kakao_id        = profile_json.get("id")
+
+            if User.objects.filter(kakao_id = kakao_id).exists():
+                user            = User.objects.get(kakao_id = kakao_id)
+                token           = jwt.encode({"login_id": user.login_id}, SECRET_KEY, algorithm = "HS256")
+                return JsonResponse({"token": token.decode("utf-8")}, status=200)
+            user_info           = {"kakao_id" : kakao_id, "email" : email}
+            return JsonResponse({"user_info" : user_info}, status = 200)
         except KeyError:
             return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
         except access_token.DoesNotExist:
             return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
-
-        if User.objects.filter(kakao_id = kakao_id).exists():
-            user            = User.objects.get(kakao_id = kakao_id)
-            token           = jwt.encode({"login_id": user.login_id}, SECRET_KEY, algorithm = "HS256")
-            return JsonResponse({"token": token.decode("utf-8")}, status=200)
-
-        user_info           = {"kakao_id" : kakao_id, "email" : email}
-        return JsonResponse({"user_info" : user_info}, status = 200)
 
