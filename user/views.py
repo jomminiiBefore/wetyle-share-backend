@@ -91,7 +91,8 @@ class UserFollowView(View):
 class CheckSignInIdView(View): 
     def post(self, request):
         data     = json.loads(request.body)
-        login_id = data.get('login_id', None)        
+        login_id = data.get('login_id', None)
+        email = data.get('email', None)
         try:            
             if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
                 return HttpResponse(status = 200)
