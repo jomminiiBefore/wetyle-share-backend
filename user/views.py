@@ -4,7 +4,7 @@ import bcrypt
 import jwt
 
 
-from my_settings import SECRET_KEY
+from my_settings import SECRET_KEY, KAKAO_KEY
 from .models     import User, Follower
 from .utils      import login_decorator
 
@@ -116,3 +116,28 @@ class CheckSignInIdView(View):
             
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+
+class KakaoSignInView(View):
+    def get(self, request):
+        try:
+            access_token    = request.headers.get('Authorization', None)
+            profile_request = requests.get(
+                "https://kapi.kakao.com/v2/user/me", headers={"Authorization" : f"Bearer {access_token}"}
+            )
+            profile_json    = profile_request.json()
+            kakao_account   = profile_json.get("kakao_account")
+            email           = kakao_account.get("email", None)
+            kakao_id        = profile_json.get("id")
+        except KeyError:
+            return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
+        except access_token.DoesNotExist:
+            return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
+
+        if User.objects.filter(kakao_id = kakao_id).exists():
+            user            = User.objects.get(kakao_id = kakao_id)
+            token           = jwt.encode({"login_id": user.login_id}, SECRET_KEY, algorithm = "HS256")
+            return JsonResponse({"token": token.decode("utf-8")}, status=200)
+
+        user_info           = {"kakao_id" : kakao_id, "email" : email}
+        return JsonResponse({"user_info" : user_info}, status = 200)
+
