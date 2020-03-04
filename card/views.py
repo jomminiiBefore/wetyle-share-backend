@@ -1,6 +1,8 @@
 import jwt
 import json
 import requests
+import boto3
+import uuid
 
 from user.models              import User
 from card.models              import (
@@ -15,6 +17,7 @@ from card.models              import (
 )
 from user.utils               import login_decorator
 from .style_related_item_data import random_item
+from my_settings              import aws_access_key_id, aws_secret_access_key, aws_s3_address
 
 from django.views             import View
 from django.http              import JsonResponse, HttpResponse
@@ -31,7 +34,7 @@ class StyleView(View):
             like_count = StyleLike.objects.filter(style_id = style_id).count()
 
             style = {
-                'style_image_url'     : [ style.image_url for style in styles],
+                'style_image_url'     : [style.image_url for style in styles],
                 'related_item'        : list(related_items.values()),
                 'description'         : style_obj.description,
                 'profile_image_url'   : style_obj.user.image_url,
@@ -57,7 +60,7 @@ class DailyLookCardView(View):
         card_list = [
             {
                 'style_id'           : style.id,
-                'style_image_url'    : style.image_url,
+                'style_image_url'    : list(style.styleimage_set.values('image_url')),
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,
@@ -76,6 +79,24 @@ class DailyLookCardView(View):
             } for style in style_list]
         return JsonResponse({"card_list": card_list}, status = 200)
 
+class DailyLookCollectionView(View):
+    def get(self, request):
+        ordered_collection_list = Collection.objects.prefetch_related('collection_follower', 'collection_style')\
+                                  .annotate(follower_count = Count('collection_follower')).order_by('-follower_count')
+        collection_list = [
+            {
+                'collection_id'        : collection.id,
+                'collection_name'      : collection.name,
+                'collection_image_url' : collection.image_url,
+                'description'          : collection.description,
+                'profile_image_url'    : collection.user.image_url,
+                'nickname'             : collection.user.nickname,
+                'style_count'          : collection.collection_style.count() ,
+                'follower_count'       : collection.collection_follower.count()
+            }
+            for collection in ordered_collection_list[:10]]
+        return JsonResponse({"collection_list": collection_list}, status = 200)
+
 class StyleUploadView(View):
     @login_decorator
     def post(self,request):
@@ -86,22 +107,46 @@ class StyleUploadView(View):
                 user_id      = request.user.id
             )
 
-            StyleImage.objects.create(
-                image_url = data['image_url'],
-                style_id = make.id
+            for image in data['image_url_list']:
+                StyleImage.objects.create(
+                    image_url = image,
+                    style_id = make.id
             )
-
+            related_items = random_item()
             StyleRelatedItem.objects.create(
-                pants        = random_item_list['pants'],
-                skirt        = random_item_list['skirt'],
-                shoes        = random_item_list['shoes'],
-                bag          = random_item_list['bag'],
-                accessory    = random_item_list['accessory'],
-                etc          = random_item_list['etc'],
+                pants        = related_items['pants'],
+                skirt        = related_items['skirt'],
+                shoes        = related_items['shoes'],
+                bag          = related_items['bag'],
+                accessory    = related_items['accessory'],
+                etc          = related_items['etc'],
                 style_id     = make.id
             )
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
+        return HttpResponse(status = 200)
+
+class StyleImageUploadView(View):
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id = aws_access_key_id,
+        aws_secret_access_key = aws_secret_access_key,
+    )
+    @login_decorator
+    def post(self, request):
+        image_url_list = []
+        for file in request.FILES.getlist('filename'):
+            url_generator = str(uuid.uuid4())
+            self.s3_client.upload_fileobj(
+                file,
+                "wetyle-share",
+                url_generator,
+                ExtraArgs={
+                    "ContentType": file.content_type
+                }
+            )
+            image_url_list.append(f'{aws_s3_address}{url_generator}')
+        return JsonResponse({"image_url_list":image_url_list}, status= 200)
 
 class StyleCommentView(View):
     @login_decorator
@@ -160,7 +205,7 @@ class PopularCardView(View):
         card_list = [
             {
                 'style_id'           : style.id, 
-                'style_image_url'    : style.image_url,
+                'style_image_url'    : list(style.styleimage_set.values('image_url')),
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,
@@ -190,7 +235,7 @@ class CollectionView(View):
             card_list  = [
                 {
                     'style_id'           : style.id,
-                    'style_image_url'    : list(style.styleimage_set.values()),
+                    'style_image_url'    : list(style.styleimage_set.values('image_url')),
                     'related_item'       : list(style.style_related_items.values()),
                     'profile_image_url'  : style.user.image_url,
                     'nickname'           : style.user.nickname,
@@ -241,3 +286,19 @@ class CollectionFollowView(View):
         except Collection.DoesNotExist:
             return JsonResponse({"message": "INVALID_COLLECTION_ID"}, status = 400)
 
+class SearchCollectionView(View):
+    def get(self, request):
+        query = request.GET.get('query', None)
+        searched_list = Collection.objects.filter(Q(name__icontains = query) | Q(description__icontains = query)).all()
+        collection_list = [
+            {
+                'collection_id'        : collection.id,
+                'collection_name'      : collection.name,
+                'collection_image_url' : collection.image_url,
+                'description'          : collection.description,
+                'profile_image_url'    : collection.user.image_url,
+                'nickname'             : collection.user.nickname,
+                'style_count'          : collection.collection_style.count() ,
+                'follower_count'       : collection.collection_follower.count()
+            } for collection in searched_list]
+        return JsonResponse({"result" : collection_list}, status = 200)

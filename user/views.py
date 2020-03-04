@@ -49,16 +49,15 @@ class SignUpView(View):
 class CheckSignUpIdView(View):
     def post(self, request):
         data = json.loads(request.body)
-        try:
-            login_id = data.get('login_id', None)            
-            email = data.get('email', None)
+        login_id = data.get('login_id', None)            
+        email = data.get('email', None)        
+        try:            
             if User.objects.filter(Q(login_id = login_id)|Q(email = email)).exists():
                 return JsonResponse({"message": "existing login_id"}, status = 400)
-            return HttpResponse(status = 200)
-                         
+
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
-
+       
 
 class SignInView(View):
     def post(self, request):
@@ -91,15 +90,12 @@ class UserFollowView(View):
 
 class CheckSignInIdView(View): 
     def post(self, request):
-        try:
-            data     = json.loads(request.body)
-            login_id = data.get('login_id', None)
-            email    = data.get('email', None)
-
+        data     = json.loads(request.body)
+        login_id = data.get('login_id', None)        
+        try:            
             if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
                 return HttpResponse(status = 200)
+            return JsonResponse({"message": "not existing account"}, status = 400)           
 
-            return JsonResponse({"message": "not existing account"}, status = 400)
-            
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)

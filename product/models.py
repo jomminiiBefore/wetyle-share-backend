@@ -2,7 +2,8 @@ from django.db import models
 from user.models import User
 
 class Product(models.Model):
-    name            = models.TextField()    
+    name            = models.CharField(max_length = 200)
+    image_url       = models.URLField(max_length = 2000)
     first_category  = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
     third_category  = models.ForeignKey('ThirdCategory', on_delete = models.SET_NULL, null = True)
@@ -10,8 +11,7 @@ class Product(models.Model):
     price           = models.IntegerField(default = 0)
     discounted_price= models.IntegerField(default = 0)
     point           = models.IntegerField(default = 0)
-    detailed_info   = models.TextField()
-    add_info        = models.TextField()
+    add_info        = models.CharField(max_length = 5000)
     created_at      = models.DateTimeField(auto_now_add = True)
     updated_at      = models.DateTimeField(auto_now = True)
     product_color   = models.ManyToManyField('Color', through = 'ProductColor')
@@ -36,7 +36,7 @@ class SecondCategory(models.Model):
 
 class ThirdCategory(models.Model):
     name            = models.CharField(max_length = 50)
-    first_category   = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
+    first_category  = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
 
     class Meta:
