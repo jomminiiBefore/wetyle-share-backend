@@ -1,4 +1,4 @@
-from .views import BrandListView, SearchProductView, PopularBrandView, ProductLikeView, ProductColorView
+from .views import BrandListView, SearchProductView, PopularBrandView, ProductLikeView, ProductColorView, ProductView, PopularProductView, ProductSizeView
 
 from django.urls import path
 
@@ -8,4 +8,7 @@ urlpatterns = [
     path('/like/<int:product_id>', ProductLikeView.as_view()),
     path('/search', SearchProductView.as_view()),
     path('/brand/popular', PopularBrandView.as_view()),
+    path('/<int:product_id>', ProductView.as_view()),
+    path('/popular/<int:product_id>', PopularProductView.as_view()),  
+    path('/size/<int:product_id>', ProductSizeView.as_view())
 ]
