@@ -37,7 +37,8 @@ class SignUpView(View):
                 email     = data['email'],
                 birthday  = data.get('birthday', None),
                 gender    = data['gender'],
-                image_url = data.get('image_url',None),
+                image_url = data.get('image_url', None),
+                kakao_id  = data.get('kakao_id', None),
             ).save()
 
             token = jwt.encode({'login_id':data['login_id']}, SECRET_KEY, algorithm = 'HS256')
@@ -54,7 +55,7 @@ class CheckIdView(View):
             login_id = data.get('login_id', None)
             if User.objects.filter(login_id = login_id).exists():
                 return JsonResponse({"message": "existing login_id"}, status = 400)
-                        
+
             return HttpResponse(status = 200)
 
         except KeyError:
@@ -63,11 +64,11 @@ class CheckIdView(View):
 class CheckEmailView(View):
     def post(self, request):
         data = json.loads(request.body)
-        try:            
+        try:
             email = data.get('email', None)
             if User.objects.filter(email = email).exists():
                 return JsonResponse({"message": "existing email"}, status = 400)
-            
+
             return HttpResponse(status = 200)
 
         except KeyError:
@@ -102,7 +103,7 @@ class UserFollowView(View):
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER_ID"}, status = 400)
 
-class CheckSignInIdView(View): 
+class CheckSignInIdView(View):
     def post(self, request):
         try:
             data     = json.loads(request.body)
@@ -113,7 +114,7 @@ class CheckSignInIdView(View):
                 return HttpResponse(status = 200)
 
             return JsonResponse({"message": "not existing account"}, status = 200)
-            
+
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
@@ -136,7 +137,7 @@ class KakaoSignInView(View):
             user_info           = {"kakao_id" : kakao_id, "email" : email}
             return JsonResponse({"user_info" : user_info}, status = 200)
         except KeyError:
-            return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
+            return JsonResponse({"message": "INVALID_KEY"}, status = 400)
         except access_token.DoesNotExist:
             return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
 
