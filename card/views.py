@@ -61,6 +61,7 @@ class DailyLookCardView(View):
             {
                 'style_id'           : style.id,
                 'style_image_url'    : list(style.styleimage_set.values('image_url')),
+                'style_description'  : style.description,
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,
@@ -97,22 +98,50 @@ class DailyLookCollectionView(View):
             for collection in ordered_collection_list[:10]]
         return JsonResponse({"collection_list": collection_list}, status = 200)
 
-class FollowingCardView(View):
-    @login_decorator
+class NewCardView(View):
     def get(self, request):
-        followee_list = list(Follower.objects.filter(follower_id = request.user.id).values('followee_id'))
-        style_list = [Style.objects.get(id = followee['followee_id']) for followee in followee_list]
+        style_list = Style.objects.all().prefetch_related('style_related_items', 'comments').order_by('-created_at')
         card_list = [
             {
                 'style_id'           : style.id,
                 'style_image_url'    : list(style.styleimage_set.values('image_url')),
+                'style_description'  : style.description,
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,
                 'profile_description': style.user.description,
                 'date'               : str(style.created_at)[2:11],
-                'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
-                'comment_count'      : style.comments.all().count(),
+                'like_count'         : style.style_like.count(),
+                'comment_count'      : style.comments.count(),
+                'comment'            : [
+                    {
+                        'profile_image' : comment.user.image_url,
+                        'nickname'      : comment.user.nickname,
+                        'description'   : comment.description,
+                        'date'          : str(comment.updated_at)[2:11],
+                        }
+                    for comment in style.comments.all()],
+            } for style in style_list]
+        return JsonResponse({"card_list": card_list}, status = 200)
+
+class FollowingCardView(View):
+    @login_decorator
+    def get(self, request):
+        followee_list = Follower.objects.filter(follower_id = request.user.id)
+        followee_id_list = [followee.followee.id for followee in followee_list]
+        style_list = Style.objects.filter(user_id__in=followee_id_list).prefetch_related('user','comments').order_by('-created_at')
+        card_list = [
+            {
+                'style_id'           : style.id,
+                'style_image_url'    : list(style.styleimage_set.values('image_url')),
+                'style_description'  : style.description,
+                'related_item'       : list(style.style_related_items.values()),
+                'profile_image_url'  : style.user.image_url,
+                'nickname'           : style.user.nickname,
+                'profile_description': style.user.description,
+                'date'               : str(style.created_at)[2:11],
+                'like_count'         : style.style_like.count(),
+                'comment_count'      : style.comments.count(),
                 'comment'            : [
                     {
                         'profile_image' : comment.user.image_url,
@@ -233,6 +262,7 @@ class PopularCardView(View):
             {
                 'style_id'           : style.id, 
                 'style_image_url'    : list(style.styleimage_set.values('image_url')),
+                'style_description'  : style.description,
                 'related_item'       : list(style.style_related_items.values()),
                 'profile_image_url'  : style.user.image_url,
                 'nickname'           : style.user.nickname,

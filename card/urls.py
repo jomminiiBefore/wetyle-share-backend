@@ -12,7 +12,8 @@ from .views import (
     ImageUploadView,
     SearchCollectionView,
     CollectionUploadView,
-    FollowingCardView
+    FollowingCardView,
+    NewCardView
 )
 
 urlpatterns = [
@@ -29,4 +30,5 @@ urlpatterns = [
     path('/dailylook/collection', DailyLookCollectionView.as_view()),
     path('/collection/upload', CollectionUploadView.as_view()),
     path('/following', FollowingCardView.as_view()),
+    path('/new-card', NewCardView.as_view()),
 ]
