@@ -17,9 +17,9 @@ class PopularBrandView(View):
                              .annotate(product_count = Count('product')).order_by('-product_count').all()
         brand_list = [
             {
-                'brand_id' : brand.id ,
-                'name'     : brand.name ,
+                'brand_id'        : brand.id ,
+                'name'            : brand.name ,
                 'large_image_url' : brand.large_image_url ,
-                'product_count'  : brand.product_set.count(),
+                'product_count'   : brand.product_set.count(),
             } for brand in ordered_brand_list[:30] ]
         return JsonResponse({"brand_list": brand_list}, status = 200)
