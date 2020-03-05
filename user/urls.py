@@ -5,7 +5,8 @@ from user.views import (
     CheckEmailView,
     CheckSignInIdView,
     UserFollowView,
-    KakaoSignInView
+    KakaoSignInView)
+
 from django.urls import path
 
 urlpatterns = [
