@@ -31,16 +31,19 @@ from django.db.models         import Q, Count
 class StyleView(View):
     def get(self, request, style_id):
         try:
-            access_token = request.headers.get('Authorization', None)
-            is_like      = None
-            if access_token:
-                payload  = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
-                user     = User.objects.get(login_id = payload['login_id'])
-                is_like  = StyleLike.objects.filter(Q(user_id = user.id) & Q(style_id = style_id)).exists()
             styles       = Style.objects.prefetch_related('styleimage_set', 'collectionstyle_set', 'style_related_items', 'comments').get(id=style_id)
+            access_token = request.headers.get('Authorization', None)
+            is_like          = None
+            is_following     = None
+            if access_token:
+                payload      = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
+                user         = User.objects.get(login_id = payload['login_id'])
+                is_like      = StyleLike.objects.filter(Q(user_id = user.id) & Q(style_id = style_id)).exists()
+                is_following = Follower.objects.filter(Q(follower_id = user.id) & Q(followee_id = styles.user_id)).exists()
             like_count   = StyleLike.objects.filter(style_id = style_id).count()
             style = {
                 'is_like'             : is_like,
+                'is_following'        : is_following,
                 'style_image_url'     : [style.image_url for style in styles.styleimage_set.all()],
                 'related_item'        : list(styles.style_related_items.values()),
                 'description'         : styles.description,
