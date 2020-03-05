@@ -110,7 +110,7 @@ class NewCardView(View):
                 'profile_description': style.user.description,
                 'date'               : str(style.created_at)[2:11],
                 'like_count'         : style.style_like.count(),
-                'comment_count'      : style.comments.all().count(),
+                'comment_count'      : style.comments.count(),
                 'comment'            : [
                     {
                         'profile_image' : comment.user.image_url,
