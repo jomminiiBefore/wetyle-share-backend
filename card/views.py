@@ -32,7 +32,7 @@ class StyleView(View):
             styles    = Style.objects.prefetch_related('styleimage_set').get(id=style_id).styleimage_set.all()
             related_items = Style.objects.prefetch_related('style_related_items').get(id=style_id).style_related_items.all()
             like_count = StyleLike.objects.filter(style_id = style_id).count()
-
+            collection_style_list = CollectionStyle.objects.filter(style_id = style_id).all()
             style = {
                 'style_image_url'     : [style.image_url for style in styles],
                 'related_item'        : list(related_items.values()),
@@ -48,7 +48,13 @@ class StyleView(View):
                         'nickname'      : comment.user.nickname,
                         'description'   : comment.description,
                         'date'          : str(comment.user.updated_at)[2:11],
-                    } for comment in style_comments]
+                    } for comment in style_comments],
+                'collection'          : [
+                    {
+                        'id'            : collection_style.collection.id,
+                        'name'          : collection_style.collection.name,
+                        'image_url'     : collection_style.collection.image_url
+                    } for collection_style in collection_style_list]
             }
             return JsonResponse({"result": style}, status = 200)
         except Style.DoesNotExist:
