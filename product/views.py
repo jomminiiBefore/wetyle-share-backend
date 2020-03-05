@@ -1,7 +1,7 @@
 import json
 import requests
 from user.models               import User
-from product.models            import Product, Brand, ProductLike, ProductDetailImage, ProductColor, ProductSize, ProductInqury, ProductSize, Size
+from product.models            import Product, Brand, ProductLike, ProductDetailImage, ProductSize, ProductInqury, ProductSize, Size
 
 from django.views              import View
 from django.http               import JsonResponse, HttpResponse
@@ -45,11 +45,11 @@ class PopularProductView(View):
                 {
                     'product_id'       : product.id,
                     'image_url'        : product.image_url,
-                    'brand'            : product.brand.name,
-                    'name'             : product.name,                    
+                    'brand'            : product.brand.name if not product.brand else ,                    
+                    'name'             : product.name,                                        
                     'price'            : product.price,
                     'discounted_price' : product.discounted_price,                    
-                    'product_like'     : ProductLike.objects.filter(product_id = product_id).count()                    
+                    'product_like'     : ProductLike.objects.filter(product_id = product_id).count()
                     } for product in ordered_product_list ]
                     
             return JsonResponse({"result": product_list[:32]}, status = 200)
