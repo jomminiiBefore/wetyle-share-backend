@@ -7,7 +7,7 @@ class Product(models.Model):
     first_category  = models.ForeignKey('FirstCategory', on_delete = models.SET_NULL, null = True)
     second_category = models.ForeignKey('SecondCategory', on_delete = models.SET_NULL, null = True)
     third_category  = models.ForeignKey('ThirdCategory', on_delete = models.SET_NULL, null = True)
-    brand           = models.ForeignKey('Brand', on_delete = models.SET_NULL, related_name = 'brands', null = True)
+    brand           = models.ForeignKey('Brand', on_delete = models.SET_NULL, null = True)
     price           = models.IntegerField(default = 0)
     discounted_price= models.IntegerField(default = 0)
     point           = models.IntegerField(default = 0)
