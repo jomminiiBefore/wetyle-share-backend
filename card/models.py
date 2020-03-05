@@ -30,7 +30,7 @@ class Style(models.Model):
         db_table = 'styles'
 
 class StyleImage(models.Model):
-    image_url   = models.URLField(max_length = 2000, null = True, blank = True)
+    image_url   = models.URLField(max_length = 2000)
     style       = models.ForeignKey(Style, on_delete = models.CASCADE)
     
     class Meta:
