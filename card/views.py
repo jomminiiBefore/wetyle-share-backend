@@ -27,34 +27,30 @@ from django.db.models         import Q, Count
 class StyleView(View):
     def get(self, request, style_id):
         try:
-            style_obj    = Style.objects.get(id=style_id)
-            style_comments = Style.objects.prefetch_related('comments').get(id=style_id).comments.all()
-            styles    = Style.objects.prefetch_related('styleimage_set').get(id=style_id).styleimage_set.all()
-            related_items = Style.objects.prefetch_related('style_related_items').get(id=style_id).style_related_items.all()
+            styles    = Style.objects.prefetch_related('styleimage_set', 'collectionstyle_set', 'style_related_items', 'comments').get(id=style_id)
             like_count = StyleLike.objects.filter(style_id = style_id).count()
-            collection_style_list = CollectionStyle.objects.filter(style_id = style_id).all()
             style = {
-                'style_image_url'     : [style.image_url for style in styles],
-                'related_item'        : list(related_items.values()),
-                'description'         : style_obj.description,
-                'profile_image_url'   : style_obj.user.image_url,
-                'nickname'            : style_obj.user.nickname,
-                'profile_description' : style_obj.user.description,
+                'style_image_url'     : [style.image_url for style in styles.styleimage_set.all()],
+                'related_item'        : list(styles.style_related_items.values()),
+                'description'         : styles.description,
+                'profile_image_url'   : styles.user.image_url,
+                'nickname'            : styles.user.nickname,
+                'profile_description' : styles.user.description,
                 'like_count'          : like_count,
-                'comment_count'       : style_comments.count(),
+                'comment_count'       : styles.comments.count(),
                 'comment'             : [
                     {
                         'profile_image' : comment.user.image_url,
                         'nickname'      : comment.user.nickname,
                         'description'   : comment.description,
                         'date'          : str(comment.user.updated_at)[2:11],
-                    } for comment in style_comments],
+                    } for comment in styles.comments.all()],
                 'collection'          : [
                     {
                         'id'            : collection_style.collection.id,
                         'name'          : collection_style.collection.name,
                         'image_url'     : collection_style.collection.image_url
-                    } for collection_style in collection_style_list]
+                    } for collection_style in styles.collectionstyle_set.all()]
             }
             return JsonResponse({"result": style}, status = 200)
         except Style.DoesNotExist:
