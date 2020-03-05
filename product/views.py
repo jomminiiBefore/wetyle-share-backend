@@ -15,22 +15,19 @@ class BrandListView(View):
 class ProductView(View):
     def get(self, request, product_id):
         try:
-            product_obj           = Product.objects.select_related('brand').get(id = product_id)                 
-            product_detail_image  = ProductDetailImage.objects.filter(product_id = product_id)            
-            like_count            = ProductLike.objects.filter(product_id = product_id).count()            
-
+            product_all = Product.objects.prefetch_related('productdetailimage_set', 'productlike_set').get(id = product_id)
             product = {
-                'image_url'             : product_obj.image_url,
-                'name'                  : product_obj.name,
-                'discounted_price'      : product_obj.discounted_price,
-                'price'                 : product_obj.price,                
-                'product_like'          : like_count,
-                'point'                 : product_obj.point,
-                'brand_name'            : product_obj.brand.name,
-                'brand_large_image_url' : product_obj.brand.large_image_url,                
-                'detail_image_url'      : [image.image_url for image in product_detail_image],  
-                'add_info'              : product_obj.add_info                
-            }         
+                  'product_id'             : product_all.id,
+                  'image_url'              : product_all.image_url,
+                  'name'                   : product_all.name,
+                  'discounted_price'       : product_all.discounted_price,
+                  'price'                  : product_all.price,
+                  'product_like'           : product_all.productlike_set.count(),
+                  'point'                  : product_all.point,
+                  'brand_name'             : product_all.brand.name,
+                  'brand_large_image_url'  : product_all.brand.large_image_url,
+                  'detail_image_url'       : [ image['image_url'] for image in product_all.productdetailimage_set.all().values() ]
+                  }    
             return JsonResponse({"result": product}, status = 200)        
 
         except Product.DoesNotExist:
@@ -64,9 +61,14 @@ class PopularProductView(View):
 
 class ProductSizeView(View):
     def get(self, request, product_id):
-        try:
-            product_size_list = ProductSize.objects.filter(product_id = product_id).select_related('size').all()
-            size_list         = [product_size.size.name for product_size in product_size_list]
+        try:            
+            product_size_list = ProductSize.objects.filter(product_id = product_id).select_related('size').all()            
+
+            size_list         = [{
+                'size_id'          : size.size_id,
+                'product_size'     : size.size.name
+            } for size in product_size_list ]
+            
             return JsonResponse({"size_list": size_list}, status = 200)
         except Product.DoesNotExist:
             return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)
