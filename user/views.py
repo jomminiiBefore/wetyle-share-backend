@@ -55,7 +55,7 @@ class CheckSignUpIdView(View):
             login_id = data.get('login_id', None)
             if User.objects.filter(login_id = login_id).exists():
                 return JsonResponse({"message": "existing login_id"}, status = 400)
-            return JsonResponse(status = 200)
+            return HttpResponse(status = 200)
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
@@ -95,7 +95,7 @@ class CheckSignInIdView(View):
             login_id = data.get('login_id', None)
             email    = data.get('email', None)
             if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
-                return JsonResponse(status = 200)
+                return HttpResponse(status = 200)
             return JsonResponse({"message": "not existing account"}, status = 400)
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
