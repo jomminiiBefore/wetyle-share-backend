@@ -114,7 +114,7 @@ class DailyLookCollectionView(View):
                                   .annotate(follower_count = Count('collection_follower')).order_by('-follower_count')
         collection_list = [
             {
-                'is_following'         : CollectionFollower.objects.filter(Q(user_id = user_id) & Q(collection_id = collection.id)).exists(),
+                'is_following'         : collection.collectionfollower_set.filter(Q(user_id = user_id) & Q(collection_id = collection.id)).exists(),
                 'collection_id'        : collection.id,
                 'collection_name'      : collection.name,
                 'collection_image_url' : collection.image_url,
