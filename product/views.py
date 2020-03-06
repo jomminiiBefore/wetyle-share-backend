@@ -28,7 +28,7 @@ from django.db.models       import Q, Count
 
 class BrandListView(View):
     def get(self, request):
-        return JsonResponse({"brand list": list(Brand.objects.values())}, status = 200)
+        return JsonResponse({"brand_list": list(Brand.objects.values())}, status = 200)
 
 class ProductColorView(View):
     def get(self, request, product_id):
