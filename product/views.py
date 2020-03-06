@@ -112,7 +112,7 @@ class PopularProductView(View):
     def get(self, request):
         try:
             ordered_product_list = Product.objects.prefetch_related('product_like')\
-                                   .annotate(like_count = Count('product_like')).order_by('-like_count')[:50]
+                                   .annotate(like_count = Count('product_like')).order_by('-like_count')[:36]
             product_list = [{
                 'product_id'       : product.id,
                 'image_url'        : product.image_url,
@@ -122,7 +122,7 @@ class PopularProductView(View):
                 'discounted_price' : product.discounted_price,
                 'product_like'     : product.product_like.count()
                 } for product in ordered_product_list]
-            return JsonResponse({"result": product_list[:32]}, status = 200)
+            return JsonResponse({"result": product_list[:36]}, status = 200)
         except KeyError:
             return JsonResponse({'message':'INVALID_KEYS'}, status = 400)
 
