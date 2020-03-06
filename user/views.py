@@ -97,7 +97,7 @@ class CheckSignInIdView(View):
             login_id = data.get('login_id', None)
             email    = data.get('email', None)
             if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
-                return JsonResponse({"message": "SUCCESS"}, status = 200)
+                return JsonResponse(status = 200)
 
             return JsonResponse({"message": "not existing account"}, status = 400)
 
