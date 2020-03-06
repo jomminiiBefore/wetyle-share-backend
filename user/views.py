@@ -42,7 +42,7 @@ class SignUpView(View):
             ).save()
 
             token = jwt.encode({'login_id':data['login_id']}, SECRET_KEY, algorithm = 'HS256')
-            return JsonResponse({"token":token.decode('utf-8'), "message": "SUCCESS"}, status = 200)
+            return JsonResponse({"token":token.decode('utf-8')}, status = 200)
         except ValidationError:
             return JsonResponse({"message":"INVALID_EMAIL"}, status = 400)
         except KeyError:
@@ -56,7 +56,7 @@ class CheckSignUpIdView(View):
             if User.objects.filter(login_id = login_id).exists():
                 return JsonResponse({"message": "existing login_id"}, status = 400)
 
-            return JsonResponse({"message": "SUCCESS"}, status = 200)
+            return JsonResponse(status = 200)
 
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
