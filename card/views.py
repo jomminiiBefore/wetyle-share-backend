@@ -130,7 +130,7 @@ class DailyLookCollectionView(View):
 class NewCardView(View):
     def get(self, request):
         style_list = Style.objects.all().prefetch_related('styleimage_set', 'style_related_items', 'comments').order_by('-created_at')
-        card_list = [
+        card_list  = [
             {
                 'style_id'           : style.id,
                 'style_image_url'    : list(style.styleimage_set.values('image_url')),
@@ -156,9 +156,9 @@ class NewCardView(View):
 class FollowingCardView(View):
     @login_decorator
     def get(self, request):
-        followee_list = Follower.objects.filter(follower_id = request.user.id)
+        followee_list    = Follower.objects.filter(follower_id = request.user.id)
         followee_id_list = [followee.followee.id for followee in followee_list]
-        style_list = Style.objects.filter(user_id__in=followee_id_list).prefetch_related('user','comments').order_by('-created_at')
+        style_list       = Style.objects.filter(user_id__in=followee_id_list).prefetch_related('user','comments').order_by('-created_at')
         card_list = [
             {
                 'style_id'           : style.id,

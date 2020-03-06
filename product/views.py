@@ -58,7 +58,7 @@ class SearchProductView(View):
     def get(self, request):
         query = request.GET.get('query', None)
         searched_list = Product.objects.filter(Q(name__icontains = query) | Q(brand__name__icontains = query)).all()
-        product_list = [
+        product_list  = [
             {
                 "product_image_url" : product.image_url,
                 "brand_name"        : product.brand.name,
@@ -137,14 +137,14 @@ class PopularProductView(View):
 
 class ProductSizeView(View):
     def get(self, request, product_id):
-        try:            
-            product_size_list = ProductSize.objects.filter(product_id = product_id).select_related('size').all()            
+        try:
+            product_size_list = ProductSize.objects.filter(product_id = product_id).select_related('size').all()
 
             size_list         = [{
                 'size_id'          : size.size_id,
                 'product_size'     : size.size.name
             } for size in product_size_list ]
-            
+
             return JsonResponse({"size_list": size_list}, status = 200)
         except Product.DoesNotExist:
             return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)
