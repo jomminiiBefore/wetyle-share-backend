@@ -55,14 +55,23 @@ def add_style():
             print(style)
             make = Style.objects.create(
                 description = style[0],
-                user_id = style[2],
-            )
-            StyleImage.objects.create(
-                image_url = style[1],
-                style_id  = make.id
+                user_id = style[1],
             )
 add_style()
 
+print("style_image")
+# Style
+def add_style_image():
+    with open('./upload/style_image.csv', mode='r') as style_image_lists:
+        reader = csv.reader(style_image_lists, delimiter=',')
+    
+        for style_image in list(reader)[1:]:
+            print(style_image)
+            StyleImage.objects.create(
+                style_id  = style_image[0],
+                image_url = style_image[1],
+            )
+add_style_image()
 print("collection_style")
 # Collection_style
 def add_collection_style():

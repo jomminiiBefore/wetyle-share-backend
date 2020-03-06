@@ -1,9 +1,23 @@
 import json
+import jwt
 import requests
-from user.models               import User
-from product.models            import Product, Brand, ProductLike, ProductDetailImage, ProductSize, ProductInqury, ProductSize, Size
 
+from product.models   import (
+    Product,
+    Brand,
+    ProductLike,
+    ProductDetailImage,
+    ProductSize,
+    ProductInqury,
+    ProductSize,
+    Size,
+    ProductColor,
+    Color
+)
+
+from my_settings      import SECRET_KEY
 from .models          import Brand, Product, ProductLike, ProductColor, Color
+from card.models      import Style
 from user.models      import User
 from user.utils       import login_decorator
 
@@ -70,45 +84,52 @@ class PopularBrandView(View):
 class ProductView(View):
     def get(self, request, product_id):
         try:
+            access_token = request.headers.get('Authorization', None)
+            is_like      = None
+            if access_token:
+                payload  = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
+                user     = User.objects.get(login_id = payload['login_id'])
+                is_like  = ProductLike.objects.filter(Q(user_id = user.id) & Q(product_id = product_id)).exists()
             product_all = Product.objects.prefetch_related('productdetailimage_set', 'productlike_set').get(id = product_id)
             product = {
-                  'product_id'             : product_all.id,
-                  'image_url'              : product_all.image_url,
-                  'name'                   : product_all.name,
-                  'discounted_price'       : product_all.discounted_price,
-                  'price'                  : product_all.price,
-                  'product_like'           : product_all.productlike_set.count(),
-                  'point'                  : product_all.point,
-                  'brand_name'             : product_all.brand.name,
-                  'brand_large_image_url'  : product_all.brand.large_image_url,
-                  'detail_image_url'       : [ image['image_url'] for image in product_all.productdetailimage_set.all().values() ]
-                  }    
-            return JsonResponse({"result": product}, status = 200)        
+                'is_like'                : is_like,
+                'product_id'             : product_all.id,
+                'image_url'              : product_all.image_url,
+                'name'                   : product_all.name,
+                'discounted_price'       : product_all.discounted_price,
+                'price'                  : product_all.price,
+                'product_like'           : product_all.productlike_set.count(),
+                'point'                  : product_all.point,
+                'brand_name'             : product_all.brand.name,
+                'brand_large_image_url'  : product_all.brand.large_image_url,
+                'detail_image_url'       : [ image['image_url'] for image in product_all.productdetailimage_set.all().values()]
+                }
+            return JsonResponse({"result": product}, status = 200)
 
         except Product.DoesNotExist:
             return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)
         except KeyError:
             return JsonResponse({'message':'INVALID_KEYS'}, status = 400)
-           
+
 
 class PopularProductView(View):
     def get(self, request, product_id):
         try:
             ordered_product_list = Product.objects.prefetch_related('product_like').annotate(like_count = Count('product_like')).order_by('-like_count')
-            
+
             product_list = [
                 {
                     'product_id'       : product.id,
                     'image_url'        : product.image_url,
-                    'brand'            : product.brand.name,                    
-                    'name'             : product.name,                                        
+                    'brand'            : product.brand.name,
+                    'name'             : product.name,
                     'price'            : product.price,
-                    'discounted_price' : product.discounted_price,                    
+                    'discounted_price' : product.discounted_price,
                     'product_like'     : ProductLike.objects.filter(product_id = product_id).count()
                     } for product in ordered_product_list ]
-                    
+
             return JsonResponse({"result": product_list[:32]}, status = 200)
-            
+
         except Product.DoesNotExist:
             return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)
         except KeyError:

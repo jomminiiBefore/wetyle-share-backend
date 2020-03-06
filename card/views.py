@@ -17,7 +17,11 @@ from card.models              import (
 )
 from user.utils               import login_decorator
 from .style_related_item_data import random_item
-from my_settings              import aws_access_key_id, aws_secret_access_key, aws_s3_address
+from my_settings              import (
+    aws_access_key_id,
+    aws_secret_access_key,
+    aws_s3_address,
+    SECRET_KEY)
 
 from django.views             import View
 from django.http              import JsonResponse, HttpResponse
@@ -27,9 +31,19 @@ from django.db.models         import Q, Count
 class StyleView(View):
     def get(self, request, style_id):
         try:
-            styles    = Style.objects.prefetch_related('styleimage_set', 'collectionstyle_set', 'style_related_items', 'comments').get(id=style_id)
-            like_count = StyleLike.objects.filter(style_id = style_id).count()
+            styles       = Style.objects.prefetch_related('styleimage_set', 'collectionstyle_set', 'style_related_items', 'comments').get(id=style_id)
+            access_token = request.headers.get('Authorization', None)
+            is_like          = None
+            is_following     = None
+            if access_token:
+                payload      = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
+                user         = User.objects.get(login_id = payload['login_id'])
+                is_like      = StyleLike.objects.filter(Q(user_id = user.id) & Q(style_id = style_id)).exists()
+                is_following = Follower.objects.filter(Q(follower_id = user.id) & Q(followee_id = styles.user_id)).exists()
+            like_count   = StyleLike.objects.filter(style_id = style_id).count()
             style = {
+                'is_like'             : is_like,
+                'is_following'        : is_following,
                 'style_image_url'     : [style.image_url for style in styles.styleimage_set.all()],
                 'related_item'        : list(styles.style_related_items.values()),
                 'description'         : styles.description,
@@ -53,6 +67,12 @@ class StyleView(View):
                     } for collection_style in styles.collectionstyle_set.all()]
             }
             return JsonResponse({"result": style}, status = 200)
+        except jwt.exceptions.DecodeError:
+            return JsonResponse({"message": "INVALID_TOKEN" }, status = 400)
+        except User.DoesNotExist:
+            return JsonResponse({"message": "INVALID_USER" }, status = 400)
+        except KeyError:
+            JsonResponse({"message": "INVALID_KEY" }, status = 400)
         except Style.DoesNotExist:
             return JsonResponse({"message": "INVALID_STYLE_ID"}, status = 400)
 
@@ -84,10 +104,17 @@ class DailyLookCardView(View):
 
 class DailyLookCollectionView(View):
     def get(self, request):
+        access_token = request.headers.get('Authorization', None)
+        is_following = None
+        user_id      = None
+        if access_token:
+            payload  = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
+            user_id  = User.objects.get(login_id = payload['login_id']).id
         ordered_collection_list = Collection.objects.prefetch_related('collection_follower', 'collection_style')\
                                   .annotate(follower_count = Count('collection_follower')).order_by('-follower_count')
         collection_list = [
             {
+                'is_following'         : collection.collectionfollower_set.filter(Q(user_id = user_id) & Q(collection_id = collection.id)).exists(),
                 'collection_id'        : collection.id,
                 'collection_name'      : collection.name,
                 'collection_image_url' : collection.image_url,
