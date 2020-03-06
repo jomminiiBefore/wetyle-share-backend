@@ -31,8 +31,8 @@ from django.db.models         import Q, Count
 class StyleView(View):
     def get(self, request, style_id):
         try:
-            styles       = Style.objects.prefetch_related('styleimage_set', 'collectionstyle_set', 'style_related_items', 'comments').get(id=style_id)
-            access_token = request.headers.get('Authorization', None)
+            styles           = Style.objects.prefetch_related('styleimage_set', 'collectionstyle_set', 'style_related_items', 'comments').get(id=style_id)
+            access_token     = request.headers.get('Authorization', None)
             is_like          = None
             is_following     = None
             if access_token:
@@ -78,7 +78,7 @@ class StyleView(View):
 
 class DailyLookCardView(View):
     def get(self, request):
-        style_list = Style.objects.all().prefetch_related('style_related_items', 'comments')
+        style_list = Style.objects.all().prefetch_related('styleimage_set', 'style_related_items', 'comments')
         card_list = [
             {
                 'style_id'           : style.id,
@@ -89,7 +89,7 @@ class DailyLookCardView(View):
                 'nickname'           : style.user.nickname,
                 'profile_description': style.user.description,
                 'date'               : str(style.created_at)[2:11],
-                'like_count'         : StyleLike.objects.filter(style_id = style.id).count(),
+                'like_count'         : style.style_like.count(),
                 'comment_count'      : style.comments.all().count(),
                 'comment'            : [
                     {
@@ -129,7 +129,7 @@ class DailyLookCollectionView(View):
 
 class NewCardView(View):
     def get(self, request):
-        style_list = Style.objects.all().prefetch_related('style_related_items', 'comments').order_by('-created_at')
+        style_list = Style.objects.all().prefetch_related('styleimage_set', 'style_related_items', 'comments').order_by('-created_at')
         card_list = [
             {
                 'style_id'           : style.id,
