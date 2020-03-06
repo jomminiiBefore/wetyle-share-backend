@@ -113,9 +113,9 @@ class ProductView(View):
 
 
 class PopularProductView(View):
-    def get(self, request, product_id):
+    def get(self, request):
         try:
-            ordered_product_list = Product.objects.prefetch_related('product_like').annotate(like_count = Count('product_like')).order_by('-like_count')
+            ordered_product_list = Product.objects.prefetch_related('product_like').annotate(like_count = Count('product_like')).order_by('-like_count')[:50]
 
             product_list = [
                 {
@@ -125,8 +125,8 @@ class PopularProductView(View):
                     'name'             : product.name,
                     'price'            : product.price,
                     'discounted_price' : product.discounted_price,
-                    'product_like'     : ProductLike.objects.filter(product_id = product_id).count()
-                    } for product in ordered_product_list ]
+                    'product_like'     : ProductLike.objects.filter(product_id = product.id).count()
+                    } for product in ordered_product_list]
 
             return JsonResponse({"result": product_list[:32]}, status = 200)
 
