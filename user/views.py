@@ -48,7 +48,7 @@ class SignUpView(View):
         except KeyError:
             return JsonResponse({"message":"INVALID_KEYS"}, status = 400)
 
-class CheckIdView(View):
+class CheckSignUpIdView(View):
     def post(self, request):
         data = json.loads(request.body)
         try:
@@ -56,20 +56,7 @@ class CheckIdView(View):
             if User.objects.filter(login_id = login_id).exists():
                 return JsonResponse({"message": "existing login_id"}, status = 400)
 
-            return HttpResponse(status = 200)
-
-        except KeyError:
-            return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
-
-class CheckEmailView(View):
-    def post(self, request):
-        data = json.loads(request.body)
-        try:
-            email = data.get('email', None)
-            if User.objects.filter(email = email).exists():
-                return JsonResponse({"message": "existing email"}, status = 400)
-
-            return HttpResponse(status = 200)
+            return JsonResponse(status = 200)
 
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
@@ -103,17 +90,16 @@ class UserFollowView(View):
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER_ID"}, status = 400)
 
-class CheckSignInIdView(View):
-    def post(self, request):
+class CheckSignInIdView(View): 
+    def post(self, request):        
         try:
-            data     = json.loads(request.body)
+            data = json.loads(request.body)
             login_id = data.get('login_id', None)
             email    = data.get('email', None)
-
             if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
-                return HttpResponse(status = 200)
+                return JsonResponse(status = 200)
 
-            return JsonResponse({"message": "not existing account"}, status = 200)
+            return JsonResponse({"message": "not existing account"}, status = 400)
 
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
@@ -140,4 +126,3 @@ class KakaoSignInView(View):
             return JsonResponse({"message": "INVALID_KEY"}, status = 400)
         except access_token.DoesNotExist:
             return JsonResponse({"message": "INVALID_TOKEN"}, status = 400)
-
