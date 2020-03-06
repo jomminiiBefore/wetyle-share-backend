@@ -2,7 +2,7 @@ import json
 import jwt
 import requests
 
-from product.models   import (
+from product.models         import (
     Product,
     Brand,
     ProductLike,
@@ -15,20 +15,20 @@ from product.models   import (
     Color
 )
 
-from my_settings      import SECRET_KEY
-from .models          import Brand, Product, ProductLike, ProductColor, Color
-from card.models      import Style
-from user.models      import User
-from user.utils       import login_decorator
+from my_settings            import SECRET_KEY
+from .models                import Brand, Product, ProductLike, ProductColor, Color
+from card.models            import Style
+from user.models            import User
+from user.utils             import login_decorator
 
-from django.views     import View
-from django.http      import JsonResponse, HttpResponse
-from django.db.models import Q, Count
+from django.views           import View
+from django.http            import JsonResponse, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models       import Q, Count
 
 class BrandListView(View):
     def get(self, request):
-        return JsonResponse({"brand list": list(Brand.objects.values())}, status = 200)
+        return JsonResponse({"brand_list": list(Brand.objects.values())}, status = 200)
 
 class ProductColorView(View):
     def get(self, request, product_id):
@@ -58,13 +58,12 @@ class SearchProductView(View):
     def get(self, request):
         query = request.GET.get('query', None)
         searched_list = Product.objects.filter(Q(name__icontains = query) | Q(brand__name__icontains = query)).all()
-        product_list = [
-            {
-                "product_image_url" : product.image_url,
-                "brand_name"        : product.brand.name,
-                "name"              : product.name,
-                "price"             : product.price,
-                "discounted_price"  : product.discounted_price,
+        product_list  = [{
+            "product_image_url" : product.image_url,
+            "brand_name"        : product.brand.name,
+            "name"              : product.name,
+            "price"             : product.price,
+            "discounted_price"  : product.discounted_price,
             } for product in searched_list]
         return JsonResponse({"product_list": product_list}, status = 200)
 
@@ -72,12 +71,11 @@ class PopularBrandView(View):
     def get(self, request):
         ordered_brand_list = Brand.objects.prefetch_related('product_set')\
                              .annotate(product_count = Count('product')).order_by('-product_count').all()
-        brand_list = [
-            {
-                'brand_id'        : brand.id,
-                'name'            : brand.name,
-                'large_image_url' : brand.large_image_url,
-                'product_count'   : brand.product_set.count(),
+        brand_list = [{
+            'brand_id'        : brand.id,
+            'name'            : brand.name,
+            'large_image_url' : brand.large_image_url,
+            'product_count'   : brand.product_set.count(),
             } for brand in ordered_brand_list[:30] ]
         return JsonResponse({"brand_list": brand_list}, status = 200)
 
@@ -102,49 +100,40 @@ class ProductView(View):
                 'point'                  : product_all.point,
                 'brand_name'             : product_all.brand.name,
                 'brand_large_image_url'  : product_all.brand.large_image_url,
-                'detail_image_url'       : [ image['image_url'] for image in product_all.productdetailimage_set.all().values()]
+                'detail_image_url'       : [image['image_url'] for image in product_all.productdetailimage_set.all().values()]
                 }
             return JsonResponse({"result": product}, status = 200)
-
         except Product.DoesNotExist:
             return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)
         except KeyError:
-            return JsonResponse({'message':'INVALID_KEYS'}, status = 400)
-
+            return JsonResponse({'message': 'INVALID_KEYS'}, status = 400)
 
 class PopularProductView(View):
-    def get(self, request, product_id):
+    def get(self, request):
         try:
-            ordered_product_list = Product.objects.prefetch_related('product_like').annotate(like_count = Count('product_like')).order_by('-like_count')
-
-            product_list = [
-                {
-                    'product_id'       : product.id,
-                    'image_url'        : product.image_url,
-                    'brand'            : product.brand.name,
-                    'name'             : product.name,
-                    'price'            : product.price,
-                    'discounted_price' : product.discounted_price,
-                    'product_like'     : ProductLike.objects.filter(product_id = product_id).count()
-                    } for product in ordered_product_list ]
-
+            ordered_product_list = Product.objects.prefetch_related('product_like')\
+                                   .annotate(like_count = Count('product_like')).order_by('-like_count')[:50]
+            product_list = [{
+                'product_id'       : product.id,
+                'image_url'        : product.image_url,
+                'brand'            : product.brand.name,
+                'name'             : product.name,
+                'price'            : product.price,
+                'discounted_price' : product.discounted_price,
+                'product_like'     : product.product_like.count()
+                } for product in ordered_product_list]
             return JsonResponse({"result": product_list[:32]}, status = 200)
-
-        except Product.DoesNotExist:
-            return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)
         except KeyError:
             return JsonResponse({'message':'INVALID_KEYS'}, status = 400)
 
 class ProductSizeView(View):
     def get(self, request, product_id):
-        try:            
-            product_size_list = ProductSize.objects.filter(product_id = product_id).select_related('size').all()            
-
+        try:
+            product_size_list = ProductSize.objects.filter(product_id = product_id).select_related('size').all()
             size_list         = [{
                 'size_id'          : size.size_id,
                 'product_size'     : size.size.name
             } for size in product_size_list ]
-            
             return JsonResponse({"size_list": size_list}, status = 200)
         except Product.DoesNotExist:
             return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)

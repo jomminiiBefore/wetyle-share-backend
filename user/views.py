@@ -4,9 +4,9 @@ import bcrypt
 import jwt
 
 
-from my_settings import SECRET_KEY, KAKAO_KEY
-from .models     import User, Follower
-from .utils      import login_decorator
+from .models                import User, Follower
+from my_settings            import SECRET_KEY, KAKAO_KEY
+from .utils                 import login_decorator
 
 from django.views           import View
 from django.http            import JsonResponse, HttpResponse
@@ -55,9 +55,7 @@ class CheckSignUpIdView(View):
             login_id = data.get('login_id', None)
             if User.objects.filter(login_id = login_id).exists():
                 return JsonResponse({"message": "existing login_id"}, status = 400)
-
             return JsonResponse(status = 200)
-
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 
@@ -90,17 +88,15 @@ class UserFollowView(View):
         except User.DoesNotExist:
             return JsonResponse({"message": "INVALID_USER_ID"}, status = 400)
 
-class CheckSignInIdView(View): 
-    def post(self, request):        
+class CheckSignInIdView(View):
+    def post(self, request):
         try:
-            data = json.loads(request.body)
+            data     = json.loads(request.body)
             login_id = data.get('login_id', None)
             email    = data.get('email', None)
             if User.objects.filter(Q(login_id = login_id)|Q(email=email)).exists():
                 return JsonResponse(status = 200)
-
             return JsonResponse({"message": "not existing account"}, status = 400)
-
         except KeyError:
             return JsonResponse({"message": "INVALID_KEYS"}, status = 400)
 

@@ -24,7 +24,7 @@ class User(models.Model):
 
 class Follower(models.Model):
     follower        = models.ForeignKey(User, on_delete = models.SET_NULL, null = True, related_name = 'follower')
-    followee        = models.ForeignKey(User, on_delete = models.SET_NULL, null = True,  related_name = 'followee')
+    followee        = models.ForeignKey(User, on_delete = models.SET_NULL, null = True, related_name = 'followee')
     created_at      = models.DateTimeField(auto_now_add = True)
 
     class Meta:
