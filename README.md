@@ -1,10 +1,9 @@
 ## Wetyle Share 프로젝트 소개_Back-End
----
 10~20대 여성을 주요 고객으로 가진 SNS & 커머스 서비스인 [스타일쉐어](https://www.styleshare.kr/) 클론 프로젝트
 - [github 확인하기](https://github.com/wecode-bootcamp-korea/wetyle-share-backend)
 
 ### 개발 인원 및 기간
-- 개발기간 : 2주
+- 개발기간 : 2020/2/23 ~ 2020/3/6
 - 개발 인원 : 프론트엔트 4명, 백엔드 2명
 - [프론트엔드 github](https://github.com/wecode-bootcamp-korea/wetyle-share-frontend)
 
@@ -18,7 +17,6 @@
 <br>
 
 ## 적용 기술 및 구현 기능
---- 
 ### 적용 기술
 - Python, Django web framework
 - Beautifulsoup, Selenium
