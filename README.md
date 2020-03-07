@@ -23,6 +23,7 @@
 - Bcrypt
 - JWT
 - KAKAO social login
+- MySQL
 - AWS EC2, RDS, S3
 - CORS headers
 
