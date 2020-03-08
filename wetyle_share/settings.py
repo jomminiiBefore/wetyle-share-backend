@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'user',
     'product',
     'card',
+    'debug_toolbar',
 ]
 
 MIDDLEWARE = [
@@ -54,9 +55,12 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware'
 ]
 
 ROOT_URLCONF = 'wetyle_share.urls'
+
+INTERNAL_IPS = ('127.0.0.1')
 
 TEMPLATES = [
     {
