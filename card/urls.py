@@ -18,7 +18,7 @@ from .views import (
 
 urlpatterns = [
     path('/style/<int:style_id>', StyleView.as_view()),
-    path('/dailylook', DailyLookCardView.as_view()),
+    path('/dailylook', DailyLookCardView.as_view(), name='dailylook'),
     path('/style/upload', StyleUploadView.as_view()),
     path('/upload/image', ImageUploadView.as_view()),
     path('/style/comment/<int:style_id>', StyleCommentView.as_view()),
