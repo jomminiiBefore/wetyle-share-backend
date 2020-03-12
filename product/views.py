@@ -33,11 +33,11 @@ class BrandListView(View):
 class ProductColorView(View):
     def get(self, request, product_id):
         try:
-            product_color_list = ProductColor.objects.filter(product_id = product_id).select_related('color').all()
-            color_list = [{
+            colors = [{
                 "color_id"  : product_color.color.id,
                 "color_name": product_color.color.name
-            } for product_color in product_color_list]
+            } for product_color in ProductColor.objects.filter(product_id = product_id).select_related('color').all()]
+
             return JsonResponse({"color_list": color_list}, status = 200)
         except Product.DoesNotExist:
             return JsonResponse({"message": "INVALID_PRODUCT_ID"}, status = 400)
@@ -111,8 +111,14 @@ class ProductView(View):
 class PopularProductView(View):
     def get(self, request):
         try:
-            ordered_product_list = Product.objects.prefetch_related('product_like')\
-                                   .annotate(like_count = Count('product_like')).order_by('-like_count')[:36]
+            ordered_product_list = (
+                Product
+                .objects
+                .prefetch_related('product_like')
+                .annotate(like_count = Count('product_like'))
+                .order_by('-like_count')[:36]
+            )
+
             product_list = [{
                 'product_id'       : product.id,
                 'image_url'        : product.image_url,

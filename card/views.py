@@ -29,19 +29,20 @@ from django.core.exceptions   import ObjectDoesNotExist
 from django.db.models         import Q, Count
 
 class StyleView(View):
+    @check_login
     def get(self, request, style_id):
         try:
             style            = Style.objects.prefetch_related('styleimage_set', 'collectionstyle_set', 'style_related_items', 'comments').get(id=style_id)
             access_token     = request.headers.get('Authorization', None)
             is_like          = None
             is_following     = None
-            if access_token:
-                payload      = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
-                user         = User.objects.get(login_id = payload['login_id'])
+
+            if request.user:
                 is_like      = StyleLike.objects.filter(Q(user_id = user.id) & Q(style_id = style_id)).exists()
                 is_following = Follower.objects.filter(Q(follower_id = user.id) & Q(followee_id = style.user_id)).exists()
-            like_count   = StyleLike.objects.filter(style_id = style_id).count()
-            style = {
+
+            like_count = StyleLike.objects.filter(style_id = style_id).count()
+            style      = {
                 'is_like'             : is_like,
                 'is_following'        : is_following,
                 'style_image_url'     : [style.image_url for style in style.styleimage_set.all()],
@@ -102,6 +103,7 @@ class DailyLookCollectionView(View):
         access_token = request.headers.get('Authorization', None)
         is_following = None
         user_id      = None
+
         if access_token:
             payload  = jwt.decode(access_token, SECRET_KEY, algorithm = 'HS256')
             user_id  = User.objects.get(login_id = payload['login_id']).id
@@ -207,6 +209,7 @@ class ImageUploadView(View):
     @login_decorator
     def post(self, request):
         image_url_list = []
+
         for file in request.FILES.getlist('filename'):
             url_generator = str(uuid.uuid4())
             self.s3_client.upload_fileobj(
@@ -217,6 +220,7 @@ class ImageUploadView(View):
                     "ContentType": file.content_type
                 })
             image_url_list.append(f'{aws_s3_address}{url_generator}')
+
         return JsonResponse({"image_url_list":image_url_list}, status= 200)
 
 class StyleCommentView(View):
